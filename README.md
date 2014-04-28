@@ -42,6 +42,11 @@ This will require:
         allow-hotplug eth0
         iface eth0 inet static
         ```
+
+5. set hostname
+    - ```sudo nano /etc/hostname```
+        - gcs or gcs0001
+
 5. configure avahi-daemon
     - ```sudo apt-get install avahi-daemon```
     - ```sudo update-rc.d avahi-daemon defaults```
@@ -51,11 +56,41 @@ This will require:
         <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
         <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
         <service-group>
-           <name replace-wildcards="yes">%h</name>
-           <service>
-              <type>_afpovertcp._tcp</type>
-              <port>548</port>
-           </service>
+            <name replace-wildcards="yes">%h</name>
+            <service>
+                <type>_afpovertcp._tcp</type>
+                <port>548</port>
+            </service>
+            <service>
+                <type>_device-info._tcp</type>
+                <port>0</port>
+                <txt-record>model=RackMac</txt-record>
+            </service>
         </service-group>
         ```
     - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
+
+6. install packages
+    - vim
+        - ```sudo apt-get install vim```
+    - nodejs and npm
+        - ```sudo apt-get install nodejs npm```
+    - GCS software prerequisites
+        - ```sudo npm install -g grunt-cli```
+        - ```sudo npm install -g nodemon```
+    - Adafruit BBB Python IO Library
+        - ```sudo apt-get install build-essential python-dev python-setuptools python-pip python-smbus```
+        - ```sudo pip install Adafruit_BBIO```
+            - test that it works
+
+                ```bash
+                sudo python -c "import Adafruit_BBIO.GPIO as GPIO; print GPIO"
+
+                you should see this or similar:
+                <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
+                ```
+
+6. set some preferences
+    - ```vim .bashrc```
+        - uncomment ```#force_color_prompt=yes```
+
