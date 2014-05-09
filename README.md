@@ -47,7 +47,7 @@ This will require:
     - ```sudo nano /etc/hostname```
         - gcs or gcs0001
 
-5. configure avahi-daemon
+6. configure avahi-daemon
     - ```sudo apt-get install avahi-daemon```
     - ```sudo update-rc.d avahi-daemon defaults```
     - Create a configuration file containing information about the server. Run “sudo nano /etc/avahi/services/afpd.service”. Enter (or copy/paste) the following
@@ -70,11 +70,12 @@ This will require:
         ```
     - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
 
-6. install packages
+7. install packages
     - vim
         - ```sudo apt-get install vim```
     - nodejs and npm
         - ```sudo apt-get install nodejs npm```
+        - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
     - GCS software prerequisites
         - ```sudo npm install -g grunt-cli```
         - ```sudo npm install -g nodemon```
@@ -90,7 +91,37 @@ This will require:
                 <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
                 ```
 
-6. set some preferences
+
+### Post Installation
+
+1. set some preferences
     - ```vim .bashrc```
         - uncomment ```#force_color_prompt=yes```
+2. clean up any ssh files
+    - delete .ssh directory
+    - delete .gitconfig
+
+
+### Troubleshooting
+
+#### OS X doesn't recognize the BBB in network interfaces anymore
+I have solved this problem by resetting the SMC and the PRAM. Here are the details if someone needs it:
+
+Reset the SMC and PRAM
+- SMC Reset:
+    - Shut down the MacBook Pro.
+    - Plug in the MagSafe power adapter to a power source, connecting it to the Mac if its not already connected.
+    - On the built-in keyboard, press the (left side) Shift-Control-Option keys and the power button at the same time.
+    - Release all the keys and the power button at the same time.
+    - Press the power button to turn on the computer.
+- PRAM:
+    - Shut down the MacBook Pro.
+    - Locate the following keys on the keyboard: Command, Option, P, and R.
+    - Turn on the computer.
+    - Press and hold the Command-Option-P-R keys. You must press this key combination before the gray screen appears.
+    - Hold the keys down until the computer restarts and you hear the startup sound for the second time.
+    - Release the keys.
+- After following the above two steps I plugged in the beaglebone and it was detected in the network interface. I was then able to successfully ssh into it.
+
+[Source](http://stackoverflow.com/questions/23318071/beagle-bone-black-not-detected-in-network-interface-on-mac)
 
