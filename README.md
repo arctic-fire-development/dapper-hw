@@ -102,14 +102,25 @@ This will require:
         - ```sudo apt-get install build-essential python-dev python-setuptools python-pip python-smbus```
         - ```sudo pip install Adafruit_BBIO```
             - test that it works
-
+                
                 ```bash
-                sudo python -c "import Adafruit_BBIO.GPIO as GPIO; print GPIO"
+                ubuntu@arm:~$ sudo python -c "import Adafruit_BBIO.GPIO as GPIO; print GPIO"
 
                 you should see this or similar:
                 <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
                 ```
+9. Device Tree wizardry
+    - install dtc
+        - ```wget -c https://raw.githubusercontent.com/RobertCNelson/tools/master/pkgs/dtc.sh```
+        - verify installation
 
+            ```bash
+            ubuntu@arm:~$ which dtc
+            /usr/local/bin/dtc
+            ```
+    - make a dts for the gps
+        + ```wget -c https:raw.githubusercontent.com/arcticfire/dapper-hw/master/T8LO-GPS-00A0.dts```
+10. 
 
 ### Post Installation
 
