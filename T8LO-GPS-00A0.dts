@@ -22,10 +22,10 @@
                 /* the pin header uses */
                 "P9.11",        /* uart4_rxd */
                 "P9.13",        /* uart4_txd */
-                "P8.4",        /* gpio1_7   */
+                "P9.15",        /* gpio1_16   */
                 /* the hardware ip uses */
                 "uart4",
-                "gpio1_7";
+                "gpio1_16";
 
         fragment@0 {
                 target = <&am33xx_pinmux>;
@@ -39,7 +39,7 @@
                         
                         gps_pps_pins: pinmux_gps_pps_pins {
 								pinctrl-single,pins = <
-										0x1c 0x27 /* P8.4 gpio1_7 */
+										0x040 0x27 /* P9.15 gpio1_16, Mode 7, Pull-Down, RxActive */
 								>;
 						};
 										
@@ -64,7 +64,7 @@
                         status = "okay";
                         pinctrl-names = "default";
                         pinctrl-0 = <&gps_pps_pins>;
-                        gpios = <&gpio2 7 0 >;
+                        gpios = <&gpio2 16 0>;
                         assert-rising-edge;
 					};
 				};
