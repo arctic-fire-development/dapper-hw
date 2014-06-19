@@ -128,13 +128,13 @@ This will require:
     - ```cat /sys/devices/bone_capemgr.9/slots```
 
         ```bash
-        0: 54:PF--- 
- 1: 55:PF--- 
- 2: 56:PF--- 
- 3: 57:PF--- 
- 4: ff:P-O-L Bone-LT-eMMC-2G,00A0,Texas Instrument,BB-BONE-EMMC-2G
- 5: ff:P-O-L Bone-Black-HDMI,00A0,Texas Instrument,BB-BONELT-HDMI
-17: ff:P-O-L Override Board Name,00A0,Override Manuf,T8LO-GPS
+         0: 54:PF--- 
+         1: 55:PF--- 
+         2: 56:PF--- 
+         3: 57:PF--- 
+         4: ff:P-O-L Bone-LT-eMMC-2G,00A0,Texas Instrument,BB-BONE-EMMC-2G
+         5: ff:P-O-L Bone-Black-HDMI,00A0,Texas Instrument,BB-BONELT-HDMI
+        17: ff:P-O-L Override Board Name,00A0,Override Manuf,T8LO-GPS
         ```
 10. install gpsd and ntp
     - ```sudo apt-get update && sudo apt-get install gpsd gpsd-clients ntp```
@@ -170,10 +170,9 @@ This will require:
     # Read the rough GPS time from device 127.127.28.0
     # Read the accurate PPS time from device 127.127.22.0
 
-    server 127.127.28.0 minpoll 4 maxpoll 4 prefer
+    server 127.127.28.0 minpoll 4 maxpoll 4
     fudge 127.127.28.0 time1 0.535 refid GPS
-
-    server 127.127.22.0 minpoll 4 maxpoll 4
+    server 127.127.22.0 minpoll 4 maxpoll 4 prefer
     fudge 127.127.22.0 time1 0.000 flag3 1 refid PPS
     ```
 
@@ -184,7 +183,17 @@ This will require:
     optargs=capemgr.enable_partno=T8LO-GPS
     ```
 
-14. verify rtc from gps/pps is working
+14. verify gpsd is working
+    - ```bash
+    ubuntu@arm:~$ cgps
+    ```
+    - you should see a table output
+
+15. verify ntp is working with pps
+    - ```bash
+    ubuntu@arm:~$ ntpq -p
+    ```
+    - if you don't see a pps entry, then we need to recompile ntp to use the ATOM driver
 
 ### Post Installation
 
