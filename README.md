@@ -184,6 +184,8 @@ This will require:
     optargs=capemgr.enable_partno=T8LO-GPS
     ```
 
+14. verify rtc from gps/pps is working
+
 ### Post Installation
 
 1. set some preferences
@@ -193,6 +195,8 @@ This will require:
     - delete .ssh directory
     - delete .gitconfig
 
+### Resources
+    - [GPS integration](http://the8thlayerof.net/2013/12/08/adafruit-ultimate-gps-cape-creating-custom-beaglebone-black-device-tree-overlay-file/)
 
 ### Troubleshooting
 

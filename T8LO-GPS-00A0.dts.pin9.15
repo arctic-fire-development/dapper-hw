@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 the8thlayerof.net
  *
- * GPS cape for UART4 on connector pins P9.11 P9.13 P8.4
+ * GPS cape for UART4 on connector pins P9.11 P9.13 P9.15
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -17,29 +17,19 @@
         part-number = "T8LO-GPS";
         version = "00A0";
 
-        /* state the resources this cape uses */
-	exclusive-use =
-		/* the pin header uses */
-		"P9.13",	/* uart4_txd */
-		"P9.11",	/* uart4_rxd */
-                "P8.4",        /* gio1_7 */
-		/* the hardware ip uses */
-		"uart4",
-                "gpio1_7";
-
         fragment@0 {
                 target = <&am33xx_pinmux>;
                 __overlay__ {
                         uart_pins: pinmux_uart_pins {
                                 pinctrl-single,pins = <
                                         0x70 0x26 /* P9.11 uart4_rxd.uart4_rxd MODE6 INPUT (RX) */
-                                        0x74 0x06 /* P9.13 uart4_txd.uart4_rxd MODE6 OUTPUT (TX) */
+                                        0x74 0x26 /* P9.13 uart4_txd.uart4_rxd MODE6 OUTPUT (TX) */
                                 >;
                         };
                         
                         pps_pins: pinmux_pps_pins {
 								pinctrl-single,pins = <
-										0x1c 0x27 /* P8.4 gpio1_7 */
+										0x040 0x27 /* P9.15 gpio1_16, Mode 7, Pull-Down, RxActive */
 								>;
 						};
 										
@@ -64,10 +54,9 @@
                         status = "okay";
                         pinctrl-names = "default";
                         pinctrl-0 = <&pps_pins>;
-                        gpios = <&gpio2 7 0 >;
-                        assert-rising-edge;
+                        gpios = <&gpio2 16 0>;
+                        assert-falling-edge;
 					};
 				};
 		};
 };
-
