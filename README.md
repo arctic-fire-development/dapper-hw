@@ -65,6 +65,8 @@ This will require:
 6. set hostname
     - ```sudo nano /etc/hostname```
         - gcs or gcs0001
+    - ```sudo nano /etc/hosts```
+        - same as above
 
 7. configure avahi-daemon
     - ```sudo apt-get install avahi-daemon```
@@ -109,7 +111,7 @@ This will require:
                 you should see this or similar:
                 <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
                 ```
-9. Device Tree wizardry
+9. Device Tree  (optional)
     - install dtc
         - ```wget -c https://raw.githubusercontent.com/RobertCNelson/tools/master/pkgs/dtc.sh```
         - verify installation
@@ -138,6 +140,7 @@ This will require:
         ```
 10. install gpsd and ntp
     - ```sudo apt-get update && sudo apt-get install gpsd gpsd-clients ntp```
+
 11. edit gpsd and ntp
     
     ```bash
@@ -180,7 +183,7 @@ This will require:
     ```bash
     edit the optargs line, adding this line if required:
 
-    optargs=capemgr.enable_partno=T8LO-GPS
+    optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G capemgr.enable_partno=BB-UART4
     ```
 
 14. verify gpsd is working

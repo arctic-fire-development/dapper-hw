@@ -4,7 +4,7 @@ var gpsd = require('node-gpsd');
 
 var listener = new gpsd.Listener({
     port: 2947,
-    hostname: 'arm.local',
+    hostname: 'nes-multicam.local',
     logger:  { 
         info: function() {}, 
         warn: console.warn, 
