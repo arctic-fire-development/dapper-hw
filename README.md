@@ -92,6 +92,8 @@ This will require:
     - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
 
 8. install packages
+    - bash autocompletion
+        - ```sudo apt-get update && sudo apt-get install bash-completion```
     - vim
         - ```sudo apt-get install vim```
     - nodejs and npm
@@ -114,6 +116,9 @@ This will require:
 9. Device Tree  (optional)
     - install dtc
         - ```wget -c https://raw.githubusercontent.com/RobertCNelson/tools/master/pkgs/dtc.sh```
+        - ```chmod +x ./dtc.sh```
+        - ```sudo ./dtc.sh```
+
         - verify installation
 
             ```bash
@@ -206,6 +211,30 @@ This will require:
 2. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
+
+### Backup uSD card
+We are going to load up a usb flash drive to the BBB, and then use dd and bzip2 to make a compressed image of the uSD card
+
+1. bootup the BBB
+2. insert the usb drive
+3. ```sudo fdisk -l```
+    ```output```
+    notice the usb is located at /dev/sda1
+    notice the uSD card is /dev/mmcblk0
+4. from home directory
+    ```mkdir usb0```
+5. become root
+    ```sudo su -```
+6. mount the usb drive to the folder we just made
+    ```
+    mount -t vfat -o uid=ubuntu,gid=ubuntu /dev/sda1 /home/ubuntu/usb0
+    exit
+    ```
+7. make the image
+    ```sudo dd if=/dev/mmcblk0 | pv -s 2G -petr | bzip2 -9 > ./BBB-ubuntu-14.04-ArcticFireGCS.img.bz2```
+8. remove the usb drive
+    ```sudo umount /home/ubuntu/usb0```
+9. profit
 
 ### Resources
     - [GPS integration](http://the8thlayerof.net/2013/12/08/adafruit-ultimate-gps-cape-creating-custom-beaglebone-black-device-tree-overlay-file/)
