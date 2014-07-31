@@ -71,7 +71,7 @@ This will require:
 7. configure avahi-daemon
     - ```sudo apt-get install avahi-daemon```
     - ```sudo update-rc.d avahi-daemon defaults```
-    - Create a configuration file containing information about the server. Run “sudo nano /etc/avahi/services/afpd.service”. Enter (or copy/paste) the following
+    - Create a configuration file containing information about the server. Run ```sudo nano /etc/avahi/services/afpd.service```. Enter (or copy/paste) the following
 
         ```xml
         <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
@@ -92,8 +92,10 @@ This will require:
     - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
 
 8. install packages
+    - update repos
+        - ```sudo apt-get update```
     - bash autocompletion
-        - ```sudo apt-get update && sudo apt-get install bash-completion```
+        - ```sudo apt-get install bash-completion```
     - vim
         - ```sudo apt-get install vim```
     - nodejs and npm
@@ -108,13 +110,14 @@ This will require:
         - ```sudo apt-get install build-essential python-dev python-setuptools python-pip python-smbus```
         - ```sudo pip install Adafruit_BBIO```
             - test that it works
-
                 ```bash
                 ubuntu@arm:~$ sudo python -c "import Adafruit_BBIO.GPIO as GPIO; print GPIO"
 
                 you should see this or similar:
                 <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
                 ```
+    - other
+        - ```sudo apt-get install pv```
 9. Device Tree  (optional)
     - install dtc
         - ```wget -c https://raw.githubusercontent.com/RobertCNelson/tools/master/pkgs/dtc.sh```
@@ -122,9 +125,8 @@ This will require:
         - ```sudo ./dtc.sh```
 
         - verify installation
-
-            ```bash
-            ubuntu@arm:~$ which dtc
+            ```
+            which dtc
             /usr/local/bin/dtc
             ```
     - make a dts for the gps
@@ -132,21 +134,21 @@ This will require:
         + ```sudo wget -c https://raw.githubusercontent.com/arctic-fire-development/dapper-hw/master/T8LO-GPS-00A0.dts```
     - compile it using the dtc
         + ```sudo dtc -@ -I dts -O dtb -o T8LO-GPS-00A0.dtbo T8LO-GPS-00A0.dts```
-    - ```sudo cp *.dtbo /lib/firmware/```
-    - ```sudo sh -c "echo T8LO-GPS > /sys/devices/bone_capemgr.9/slots"```
-    - ```cat /sys/devices/bone_capemgr.9/slots```
-
-        ```bash
-         0: 54:PF---
-         1: 55:PF---
-         2: 56:PF---
-         3: 57:PF---
-         4: ff:P-O-L Bone-LT-eMMC-2G,00A0,Texas Instrument,BB-BONE-EMMC-2G
-         5: ff:P-O-L Bone-Black-HDMI,00A0,Texas Instrument,BB-BONELT-HDMI
-        17: ff:P-O-L Override Board Name,00A0,Override Manuf,T8LO-GPS
-        ```
+    - copy over and enable
+        - ```sudo cp *.dtbo /lib/firmware/```
+        - ```sudo sh -c "echo T8LO-GPS > /sys/devices/bone_capemgr.9/slots"```
+        - ```cat /sys/devices/bone_capemgr.9/slots```
+            ```bash
+             0: 54:PF---
+             1: 55:PF---
+             2: 56:PF---
+             3: 57:PF---
+             4: ff:P-O-L Bone-LT-eMMC-2G,00A0,Texas Instrument,BB-BONE-EMMC-2G
+             5: ff:P-O-L Bone-Black-HDMI,00A0,Texas Instrument,BB-BONELT-HDMI
+            17: ff:P-O-L Override Board Name,00A0,Override Manuf,T8LO-GPS
+            ```
 10. install gpsd and ntp
-    - ```sudo apt-get update && sudo apt-get install gpsd gpsd-clients ntp```
+    - ```sudo apt-get install gpsd gpsd-clients ntp```
 
 11. edit gpsd and ntp
 
@@ -187,11 +189,8 @@ This will require:
     ```
 
 13. edit /boot/uboot/uEnv.txt
-    ```bash
-    edit the optargs line, adding this line if required:
-
-    optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G capemgr.enable_partno=BB-UART4
-    ```
+    - edit the optargs line, adding this line if required:
+        - ```optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G capemgr.enable_partno=BB-UART4```
 
 14. verify gpsd is working
     - ```bash
@@ -205,7 +204,17 @@ This will require:
     ```
     - if you don't see a pps entry, then we need to recompile ntp to use the ATOM driver
 
-### Post Installation
+16. turn off the damned governor
+    - ```sudo update-rc.d ondemand disable```
+    - ```sudo reboot```
+    - verify it took hold
+        - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq```
+            - ```1000000```
+        - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor```
+            - ```performance```
+        - notice CPU frequency is 1000Mhz and governor is set to performance
+
+### Post System Installation
 
 1. set some preferences
     - ```vim .bashrc```
@@ -224,16 +233,13 @@ This will require:
                 fi
             fi
             ```
+2. setup gcs
     - add your github public and private keys to ~/.ssh
     - test that you can connect to github
-        - ```bash
-        ubuntu@arm:~$ ssh -T git@github.com
-        ```
+        - ```ssh -T git@github.com```
         - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
     - clone the directory
-        - ```bash
-        ubuntu@arm:~$ git clone git@github.com:arctic-fire-development/dapper-gcs.git
-        ```
+        - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
         - ```bash
         cd dapper-gcs
         git submodule init
@@ -242,7 +248,10 @@ This will require:
         bower install
         grunt
         ```
-2. clean up any ssh files
+    - copy over the upstart script
+        - ```sudo cp dapper-gcs.conf /etc/init/```
+        - ```sudo start dapper-gcs```
+3. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
 
@@ -265,7 +274,7 @@ We are going to load up a usb flash drive to the BBB, and then use dd and bzip2 
     exit
     ```
 7. make the image
-    ```sudo dd if=/dev/mmcblk0 | pv -s 2G -petr | bzip2 -9 > ./BBB-ubuntu-14.04-ArcticFireGCS.img.bz2```
+    ```sudo dd if=/dev/mmcblk0 | pv -s 2G -petr | gzip -1 > ./usb0/BBB-ubuntu-14.04-ArcticFireGCS.img.gz```
 8. remove the usb drive
     ```sudo umount /home/ubuntu/usb0```
 9. profit
