@@ -212,6 +212,7 @@ This will require:
             GOVERNOR="performance"  # <---- originally was "ondemand"
             break
         ```
+    - ```sudo reboot```
     - verify it took hold
         - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq```
             - ```1000000```
@@ -221,6 +222,9 @@ This will require:
 
 17. turn off apache
     - ```sudo update-rc.d -f apache2 disable```
+    - ```sudo reboot```
+    - ```sudo ps -aux | grep apache | grep -v grep```
+        - should come back empty
 
 ### Post System Installation
 
