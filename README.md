@@ -205,14 +205,22 @@ This will require:
     - if you don't see a pps entry, then we need to recompile ntp to use the ATOM driver
 
 16. turn off the damned governor
-    - ```sudo update-rc.d ondemand disable```
-    - ```sudo reboot```
+    - ```sudo vim /etc/init.d/ondemand```
+    - edit ondemand to be performance
+        ```bash
+        *ondemand*)
+            GOVERNOR="performance"  # <---- originally was "ondemand"
+            break
+        ```
     - verify it took hold
         - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq```
             - ```1000000```
         - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor```
             - ```performance```
         - notice CPU frequency is 1000Mhz and governor is set to performance
+
+17. turn off apache
+    - ```sudo update-rc.d -f apache2 disable```
 
 ### Post System Installation
 
