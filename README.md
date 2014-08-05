@@ -246,23 +246,50 @@ This will require:
             fi
             ```
 2. setup gcs
-    - add your github public and private keys to ~/.ssh
-    - test that you can connect to github
-        - ```ssh -T git@github.com```
-        - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
-    - clone the directory
-        - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
-        - ```bash
-        cd dapper-gcs
-        git submodule init
-        git update
-        npm install
-        bower install
-        grunt
-        ```
-    - copy over the upstart script
-        - ```sudo cp dapper-gcs.conf /etc/init/```
-        - ```sudo start dapper-gcs```
+    - for development work
+        - add your github public and private keys to ~/.ssh
+        - test that you can connect to github
+            - ```ssh -T git@github.com```
+            - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
+        - clone the directory into /home/ubuntu
+            - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
+            - ```bash
+            cd dapper-gcs
+            git submodule init
+            git update
+            npm install
+            bower install
+            grunt
+            ```
+        - copy over the upstart script as dapper-gcs-dev.conf
+            - ```sudo cp dapper-gcs.conf /etc/init/dapper-gcs-dev.conf```
+            - edit the file to point to the installation at /home/ubuntu
+            - uncomment the setuid and setgid lines
+            - comment the env PORT=80 line
+        - run the server
+            - ```sudo start dapper-gcs-dev```
+    - for production
+        - become root
+            - ```sudo su -```
+        - add your github public and private keys to /root/.ssh
+        - test that you can connect to github
+            - ```ssh -T git@github.com```
+            - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
+        - clone the directory into /var/www
+            - ```cd /var/www```
+            - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
+            - ```bash
+            cd dapper-gcs
+            git submodule init
+            git update
+            npm install
+            bower install
+            grunt
+            ```
+        - copy over the upstart script
+            - ```cp dapper-gcs.conf /etc/init/```
+        - run the server
+            - ```start dapper-gcs```
 3. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
