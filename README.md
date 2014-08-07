@@ -58,7 +58,6 @@ This will require:
 
         ```bash
         auto eth0
-        allow-hotplug eth0
         iface eth0 inet dhcp
         ```
 
@@ -252,8 +251,8 @@ This will require:
             - ```ssh -T git@github.com```
             - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
         - clone the directory into /home/ubuntu
-            - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
-            - ```bash
+            ```
+            git clone git@github.com:arctic-fire-development/dapper-gcs.git
             cd dapper-gcs
             git submodule init
             git update
@@ -276,9 +275,9 @@ This will require:
             - ```ssh -T git@github.com```
             - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
         - clone the directory into /var/www
-            - ```cd /var/www```
-            - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
-            - ```bash
+            ```
+            cd /var/www
+            git clone git@github.com:arctic-fire-development/dapper-gcs.git
             cd dapper-gcs
             git submodule init
             git update
@@ -288,13 +287,15 @@ This will require:
             ```
         - copy over the upstart script
             - ```cp dapper-gcs.conf /etc/init/```
+        - copy config.json.orig to config.json
+            - edit as needed
         - run the server
             - ```start dapper-gcs```
 3. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
 
-### Backup uSD card
+### Backup uSD card while on the BeagleBone
 We are going to load up a usb flash drive to the BBB, and then use dd and bzip2 to make a compressed image of the uSD card
 
 1. bootup the BBB
@@ -317,6 +318,28 @@ We are going to load up a usb flash drive to the BBB, and then use dd and bzip2 
 8. remove the usb drive
     ```sudo umount /home/ubuntu/usb0```
 9. profit
+
+### Hot Backups Over the Network
+
+If you don’t have a USB drive, or your Beaglebone is trapped in a burning house, it’s possible to run the backup over an SSH session.
+
+From a Linux desktop PC, enter the following. This would be a good point at which to remind you of dd’s awesome ability to screw things up royally, so type carefully:
+
+```
+wilsonrm@silvergulch:~# ssh -t root@arm.local dd if=/dev/mmcblk0 | gzip -1 | dd of=sd_backup.img.gz
+```
+You should, of course, replace with IP address with your Beaglebone’s address.
+
+The command will prompt you for your root password on the Beaglebone.  If you’re running Ubuntu on your Beaglebone this might stump you: there probably isn’t one.  You’ll have to set a password manually from the Beaglebone’s command line:
+
+```
+ubuntu@arm:~$ sudo -i
+[sudo] password for ubuntu:
+root@arm:~# passwd
+Enter new UNIX password:
+Retype new UNIX password:
+passwd: password updated successfully
+```
 
 ### Resources
     - [GPS integration](http://the8thlayerof.net/2013/12/08/adafruit-ultimate-gps-cape-creating-custom-beaglebone-black-device-tree-overlay-file/)
