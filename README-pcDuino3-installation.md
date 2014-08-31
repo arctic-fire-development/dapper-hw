@@ -21,7 +21,7 @@
 6. make new partitions
     ```bash
     # fdisk ${CARD}
-      
+
     Command (m for help): n
     Partition type:
        p   primary (0 primary, 0 extended, 4 free)
@@ -29,33 +29,33 @@
     Select (default p): p
     Partition number (1-4, default 1): 1
     First sector (2048-15523839, default 2048): 2048
-    Last sector, +sectors or +size{K,M,G} (2048-15523839, default 15523839): +15M 
-      
+    Last sector, +sectors or +size{K,M,G} (2048-15523839, default 15523839): +15M
+
     Command (m for help): n
     Partition type:
        p   primary (1 primary, 0 extended, 3 free)
        e   extended
-    Select (default p): p    
+    Select (default p): p
     Partition number (1-4, default 2): 2
     First sector (32768-15523839, default 32768): 32768
     Last sector, +sectors or +size{K,M,G} (32768-15523839, default 15523839): +240M
-      
+
     Command (m for help): p
-      
+
     Disk /dev/mmcblk0: 7948 MB, 7948206080 bytes
     4 heads, 16 sectors/track, 242560 cylinders, total 15523840 sectors
     Units = sectors of 1 * 512 = 512 bytes
     Sector size (logical/physical): 512 bytes / 512 bytes
     I/O size (minimum/optimal): 512 bytes / 512 bytes
     Disk identifier: 0x17002d14
-      
+
             Device Boot      Start         End      Blocks   Id  System
     /dev/mmcblk0p1            2048       32767       15360   83  Linux
     /dev/mmcblk0p2           32768      524287      245760   83  Linux
-      
+
     Command (m for help): w
     The partition table has been altered!
-      
+
     Calling ioctl() to re-read partition table.
     ```
 7. format partitions
@@ -83,6 +83,7 @@
             bootargs=console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootfstype=ext4 rootwait
             uenvcmd=run loadkernel && run loaddtb && bootm 0x46000000 - 0x49000000
             ```
+
 ### compile linux kernel
 0. ensure the sdcard partitions are mounted
     - ```mkdir /mnt/vfat /mnt/ext4```
@@ -99,57 +100,40 @@
     - select the following
         - ```bash
         [*] Enable loadable module support  —>
- 
-        [*]   Forced module loading
-         
+        [*] Forced module loading
         [*] Module unloading
-         
         [*] Forced module unloading
-         
         [*] Module versioning support
-         
         [*] Source checksum for all modules
-         
         [*] Module signature verification
-         
         [*] Require modules to be validly signed
-         
         [*] Automatically sign all modules
-         
         Which hash algorithm should modules be signed with? (Sign modules with SHA-1)
         ```
-        - ```
+        - ```bash
         System Type —>
- 
         [*] Allwinner SoCs —>
-         
         [*]   Allwinner A20 (sun7i) SoCs support
         ```
-        - ```
+        - ```bash
         [*] USB support —>
-
         <M> USB Mass Storage —>
         --- all as M
-
         [*] USB Serial Converter —>
-
         <M> USB Generic Serial Driver
-
         <M> USB FTDI
-
         [*] Staging —>
-
         <M> RTL8188EU
         <M> as AP
-        
         ```
 5. build the kernel, dtb
     - ```cd build```
-    - ```ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 make prepare```
-    - ``````ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 make modules_prepare```
-    - ```ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 make uImage -j 8```
-    - ```ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 make dtbs -j 8```
-    - ```ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 make modules -j 8```
+    - ```COMPILE='ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000'```
+    - ```${COMPILE} make prepare```
+    - ```${COMPILE} make modules_prepare```
+    - ```${COMPILE} make uImage -j 8```
+    - ```${COMPILE} make dtbs -j 8```
+    - ```${COMPILE} make modules -j 8```
 
 6. install kernel and dtb to first partition of sdcard
     - ```cp arch/arm/boot/uImage   /mnt/vfat/```
@@ -157,7 +141,7 @@
 
 7. install modules to the second partition
     - still inside the build directory
-    - ```ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 make modules_install INSTALL_MOD_PATH=/mnt/ext4/```
+    - ```${COMPILE} make modules_install INSTALL_MOD_PATH=/mnt/ext4/```
 
 8. ```cd ~```
 
@@ -172,14 +156,6 @@
 
 ### os setup
 - change wifi to be AP
-    - (optional)```sudo vi  /etc/udev/rules.d/70-persistent-net.rules```
-        - ```vim
-        #
-        # You can modify it, as long as you keep each rule on a single
-        # line, and change only the value of the NAME= key
-
-        SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*". ATTR{address}=="*", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0"
-        ```
     - to use wlan0 as a gateway, set wlan0 as static ip
         - ```sudo vim /etc/network/interfaces
         auto lo
@@ -189,14 +165,14 @@
             address 192.168.2.1
             netmask 255.255.255.0
         ```
-        - sudo apt-get install dnsmasq
+        - ```sudo apt-get install dnsmasq```
             - edit /etc/dnsmasq to have
-                local=/localnet/
-                address=/gcs.net/127.0.0.1
-                interface=wlan0
-                dhcp-range=wlan0,192.168.2.50,192.168.2.150,12h
-
-
+              ```bash
+              local=/localnet/
+              address=/gcs/127.0.0.1
+              interface=wlan0
+              dhcp-range=wlan0,192.168.2.50,192.168.2.100,12h
+              ```
     - build and install hostapd
         - ```git clone https://github.com/jenssegers/RTL8188-hostapd```
         - ```cd RTL8188-hostapd/hostapd```
