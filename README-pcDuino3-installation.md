@@ -3,12 +3,36 @@
 ### setup dev platform
 1. install cross-compile toolchain
     - ```sudo apt-get install gcc-arm-linux-eabihf g++-arm-linux-eabihf```
-2. download u-boot, kernel, rootfs, and wireless driver
+2. install kermit
+    - ```sudo apt-get install ckermit```
+3. download u-boot, kernel, rootfs, and wireless driver
     - ```git clone https://github.com/jwrdegoede/u-boot-sunxi.git  -b sunxi-next```
         - this is the A20 dual-cpu support (PSCI) until it is added to the main repo at https://github.com/linux-sunxi/u-boot-sunxi
     - ```git clone https://github.com/linux-sunxi/linux-sunxi -b sunxi-next```
     - ```wget http://releases.linaro.org/14.08/ubuntu/trusty-images/nano/linaro-trusty-nano-20140821-681.tar.gz```
     - ```git clone https://github.com/lwfinger/rtl8188eu```
+4. if on OS X
+    - you will need the drivers for the usb-tty device
+        - ```git clone https://github.com/changux/pl2303osx.git```
+        - double click PL2303_Serial-USB_on_OSX_Lion.pkg
+    - install kermit from here:
+        - [kermit](http://www.kermitproject.org/ck90.html#source)
+    - setup .kermrc
+        - replace /dev/tty.PL2303-00001014 with whatever it shows up as in /dev
+        - ```bash
+            set line /dev/tty.PL2303-00001014
+            set speed 115200
+            set carrier-watch off
+            set handshake none
+            set flow-control none
+            robust
+            set file type bin
+            set file name lit
+            set rec pack 1000
+            set send pack 1000
+            set window 5
+            set prompt Kermit>
+            ```
 
 ### prep sd card
 1. insert >4GB into computer
