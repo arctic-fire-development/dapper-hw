@@ -90,12 +90,14 @@
 
 ### compile u-boot
 1. ```cd u-boot-sunxi```
-2. ```mkdir build```
-3. ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
-4. ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
-5. ```cd build```
-6. ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
-7. create u-boot uEnv.txt
+2. edit the fex file located at
+    - change ```usb_port_type``` from 0 to 1 to make it a USB host
+3. ```mkdir build```
+4. ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
+5. ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
+6. ```cd build```
+7. ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
+8. create u-boot uEnv.txt
     - mount first partition
         - ```mkdir /mnt/vfat```
         - ```sudo mount -t vfat /dev/mmcblk0p1 /mnt/vfat```
@@ -179,7 +181,7 @@
 1. ```sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz```
 
 ### os setup
-- change wifi to be AP
+1. change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
         - ```sudo vim /etc/network/interfaces
         auto lo
@@ -215,7 +217,16 @@
         wmm_enabled=0
         ```
 
+2. Turn on UART2
+    - add this to /etc/init/uart2.service
+        ```bash
+        echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
+        echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
+        ```
+
+
 ### install gcs
 
 references
-http://forum.odroid.com/viewtopic.php?f=52&t=1674
+- [wifi ap mode](http://forum.odroid.com/viewtopic.php?f=52&t=1674)
+- [usb otg to host](http://learn.linksprite.com/pcduino/usb-development/turn-usb-otg-port-into-an-extra-usb-host-pcduino3/)
