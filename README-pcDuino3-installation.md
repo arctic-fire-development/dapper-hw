@@ -23,7 +23,6 @@
         - [kermit](http://www.kermitproject.org/ck90.html#source)
     - setup .kermrc
         - replace /dev/tty.PL2303-00001014 with whatever it shows up as in /dev
-
         ```bash
         set line /dev/tty.PL2303-00001014
         set speed 115200
@@ -43,89 +42,98 @@
 
 1.  insert >4GB into computer
 2.  use dmesg or similar to get the device location (/dev/sdc or /dev/mmcblk0, etc)
-        - ```CARD=/dev/sdc```
+    - ```CARD=/dev/sdc```
 3.  unmount it
 4.  format with gparted or similar
-        - be sure to have dos partition table created
+    - be sure to have dos partition table created
 5.  ensure it is still unmounted
 6.  make new partitions
-        ```bash
-        # fdisk ${CARD}
+    ```bash
+    # fdisk ${CARD}
 
-        Command (m for help): n
-        Partition type:
-           p   primary (0 primary, 0 extended, 4 free)
-           e   extended
-        Select (default p): p
-        Partition number (1-4, default 1): 1
-        First sector (2048-15523839, default 2048): 2048
-        Last sector, +sectors or +size{K,M,G} (2048-15523839, default 15523839): +15M
+    Command (m for help): n
+    Partition type:
+       p   primary (0 primary, 0 extended, 4 free)
+       e   extended
+    Select (default p): p
+    Partition number (1-4, default 1): 1
+    First sector (2048-15523839, default 2048): 2048
+    Last sector, +sectors or +size{K,M,G} (2048-15523839, default 15523839): +15M
 
-        Command (m for help): n
-        Partition type:
-           p   primary (1 primary, 0 extended, 3 free)
-           e   extended
-        Select (default p): p
-        Partition number (1-4, default 2): 2
-        First sector (32768-15523839, default 32768): 32768
-        Last sector, +sectors or +size{K,M,G} (32768-15523839, default 15523839): +240M
+    Command (m for help): n
+    Partition type:
+       p   primary (1 primary, 0 extended, 3 free)
+       e   extended
+    Select (default p): p
+    Partition number (1-4, default 2): 2
+    First sector (32768-15523839, default 32768): 32768
+    Last sector, +sectors or +size{K,M,G} (32768-15523839, default 15523839): +240M
 
-        Command (m for help): p
+    Command (m for help): p
 
-        Disk /dev/mmcblk0: 7948 MB, 7948206080 bytes
-        4 heads, 16 sectors/track, 242560 cylinders, total 15523840 sectors
-        Units = sectors of 1 * 512 = 512 bytes
-        Sector size (logical/physical): 512 bytes / 512 bytes
-        I/O size (minimum/optimal): 512 bytes / 512 bytes
-        Disk identifier: 0x17002d14
+    Disk /dev/mmcblk0: 7948 MB, 7948206080 bytes
+    4 heads, 16 sectors/track, 242560 cylinders, total 15523840 sectors
+    Units = sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical): 512 bytes / 512 bytes
+    I/O size (minimum/optimal): 512 bytes / 512 bytes
+    Disk identifier: 0x17002d14
 
-                Device Boot      Start         End      Blocks   Id  System
-        /dev/mmcblk0p1            2048       32767       15360   83  Linux
-        /dev/mmcblk0p2           32768      524287      245760   83  Linux
+            Device Boot      Start         End      Blocks   Id  System
+    /dev/mmcblk0p1            2048       32767       15360   83  Linux
+    /dev/mmcblk0p2           32768      524287      245760   83  Linux
 
-        Command (m for help): w
-        The partition table has been altered!
+    Command (m for help): w
+    The partition table has been altered!
 
-        Calling ioctl() to re-read partition table.
-        ```
-
+    Calling ioctl() to re-read partition table.
+    ```
 7.  format partitions
     - ```sudo mkfs.vfat /dev/mmcblk0p1```
-        - use /dev/sdc1 or similar if base device is sdc
+        - use /dev/sdc1 or similar if uSD card device is sdc
     - ```sudo mkfs.ext4 /dev/mmcblk0p2```
-        - use /dev/sdc2 or similar if base device is sdc
+        - use /dev/sdc2 or similar if uSD card device is sdc
 
-### compile u-boot
+### build the board specific script.bin
 
-1. ```cd sunxi-tools```
+script.bin is a file with very important configuration parameters like port GPIO assignments, DDR memory parameters, etc
+
+1.  mount first partition
+    - ```mkdir /mnt/vfat```
+    - ```sudo mount -t vfat /dev/mmcblk0p1 /mnt/vfat```
+2. ```cd sunxi-tools```
     - ```make fex2bin```
-2. ```cd sunxi-boards/sys_config/a20```
+    - ```cp fex2bin ~/bin```
+3. ```cd sunxi-boards/sys_config/a20```
     - ```cp linksprite_pcduino3.fex original-linksprite_pcduino3.fex```
     - edit linksprite_pcduino3.fex
         - change ```usb_port_type``` from 0 to 1 to make it a USB host
-3. ```cd u-boot-sunxi```
-4. ```mkdir build```
-5. ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
-6. ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
-7. ```cd build```
-8. ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
-9. copy over u-boot uEnv.txt
-    - mount first partition
-        - ```mkdir /mnt/vfat```
-        - ```sudo mount -t vfat /dev/mmcblk0p1 /mnt/vfat```
+    - ```fex2bin linksprite_pcduino3.fex > script.bin```
+4.  ```cp script.bin /mnt/sd```
+5.  ```sync```
+6.  ```umount /dev/sdX1```
+
+### compile u-boot
+
+1. ```cd u-boot-sunxi```
+2. ```mkdir build```
+3. ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
+4. ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
+5. ```cd build```
+6. ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
+7. copy over u-boot uEnv.txt
     - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/uEnv.txt```
 
 ### compile linux kernel
-0. ensure the sdcard partitions are mounted
+1. ensure the sdcard partitions are mounted
     - ```mkdir /mnt/vfat /mnt/ext4```
     - ```sudo mount -t vfat /dev/sdc1 /mnt/vfat```
     - ```sudo mount -t ext4 /dev/sdc2 /mnt/ext4```
-1. ```cd linux-sunxi```
-2. verify you are in the sunxi-next branch
+2. ```cd linux-sunxi```
+3. verify you are in the sunxi-next branch
     - ```git status```
-3. make build directory
+4. make build directory
     - ```mkdir build```
-4. generate the .config file and add the following to the kernel
+5. generate the .config file and add the following to the kernel
     - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build```
     - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build```
     - select the following
@@ -157,7 +165,7 @@
         <M> RTL8188EU
         <M> as AP
         ```
-5. build the kernel, dtb
+6. build the kernel, dtb, and modules
     - ```cd build```
     - ```COMPILE='ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000'```
     - ```${COMPILE} make prepare```
@@ -165,16 +173,14 @@
     - ```${COMPILE} make uImage -j 8```
     - ```${COMPILE} make dtbs -j 8```
     - ```${COMPILE} make modules -j 8```
-
-6. install kernel and dtb to first partition of sdcard
+7. install kernel and dtb to first partition of sdcard
     - ```cp arch/arm/boot/uImage   /mnt/vfat/```
     - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb /mnt/vfat/dtb```
-
-7. install modules to the second partition
+8. install modules to the second partition
     - still inside the build directory
-    - ```${COMPILE} make modules_install INSTALL_MOD_PATH=/mnt/ext4/```
-
-8. ```cd ~```
+    - ```mkdir rootfs```
+    - ```${COMPILE} make modules_install INSTALL_MOD_PATH=rootfs```
+9. ```cd ~```
 
 ### install rootfs
 0. ensure the sdcard partitions are mounted (they should be from the previous steps)
@@ -185,10 +191,15 @@
         - ```sudo mount -t ext4 /dev/sdc2 /mnt/ext4```
 1. ```sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz```
 
+### install modules and firmware
+1. ```cp -rfv linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
+
 ### os setup
+
 1. change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
-        - ```sudo vim /etc/network/interfaces
+        ```bash
+        sudo vim /etc/network/interfaces
         auto lo
         iface lo inet loopback
         auto wlan0
@@ -221,7 +232,6 @@
         auth_algs=1
         wmm_enabled=0
         ```
-
 2. Turn on UART2
     - add this to /etc/init/uart2.service
         ```bash
@@ -236,3 +246,4 @@
 references
 - [wifi ap mode](http://forum.odroid.com/viewtopic.php?f=52&t=1674)
 - [usb otg to host](http://learn.linksprite.com/pcduino/usb-development/turn-usb-otg-port-into-an-extra-usb-host-pcduino3/)
+- [pinouts](http://learn.linksprite.com/pcduino/arduino-ish-program/uart/how-to-directly-manupilate-uart-of-pcduino-under-linux/)
