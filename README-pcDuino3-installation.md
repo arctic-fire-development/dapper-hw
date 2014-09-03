@@ -8,13 +8,7 @@
     - ```sudo usermod -a -G vboxsf wilsonrm```
     - re- login for changes to take effect
 3. download u-boot, kernel, rootfs, wireless AP daemon, sunxi tools and boards
-    - ```git clone https://github.com/jwrdegoede/u-boot-sunxi.git  -b sunxi-next```
-        - this is the A20 dual-cpu support (PSCI) until it is added to the main repo at https://github.com/linux-sunxi/u-boot-sunxi
-    - ```git clone https://github.com/linux-sunxi/linux-sunxi -b sunxi-next```
-    - ```wget http://releases.linaro.org/14.08/ubuntu/trusty-images/nano/linaro-trusty-nano-20140821-681.tar.gz```
-    - ```git clone https://github.com/lwfinger/rtl8188eu```
-    - ```git clone git://github.com/linux-sunxi/sunxi-tools.git```
-    - ```git clone git://github.com/linux-sunxi/sunxi-boards.git```
+    - run ```./clone-repos.sh```
 4. if on OS X
     - you will need the drivers for the usb-tty device
         - ```git clone https://github.com/changux/pl2303osx.git```
@@ -106,6 +100,7 @@ script.bin is a file with very important configuration parameters like port GPIO
 3. ```cd sunxi-boards/sys_config/a20```
     - ```cp linksprite_pcduino3.fex original-linksprite_pcduino3.fex```
     - edit linksprite_pcduino3.fex
+        - for usbc0
         - change ```usb_port_type``` from 0 to 1 to make it a USB host
     - ```fex2bin linksprite_pcduino3.fex > script.bin```
 4.  ```cp script.bin /mnt/sd```
@@ -133,54 +128,60 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```git status```
 4. make build directory
     - ```mkdir build```
-5. generate the .config file and add the following to the kernel
-    - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build```
-    - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build```
-    - select the following
-        - ```bash
-        [*] Enable loadable module support  —>
-        [*] Forced module loading
-        [*] Module unloading
-        [*] Forced module unloading
-        [*] Module versioning support
-        [*] Source checksum for all modules
-        [*] Module signature verification
-        [*] Require modules to be validly signed
-        [*] Automatically sign all modules
-        Which hash algorithm should modules be signed with? (Sign modules with SHA-1)
-        ```
-        - ```bash
-        System Type —>
-        [*] Allwinner SoCs —>
-        [*] Allwinner A20 (sun7i) SoCs support
-        ```
-        - ```bash
-        [*] USB support —>
-        <M> USB Mass Storage —>
-        --- all as M
-        [*] USB Serial Converter —>
-        <M> USB Generic Serial Driver
-        <M> USB FTDI
-        [*] Staging —>
-        <M> RTL8188EU
-        <M> as AP
-        ```
-6. build the kernel, dtb, and modules
+5. build the kernel (uImage), dtb, and modules
     - ```cd build```
-    - ```COMPILE='ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="${CFLAGS}" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000'```
+    - copy the .config from dapper-hw
+        - ```cp ~/dapper-hw/kernel.config ./.config```
+    - ```COMPILE='ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000'```
     - ```${COMPILE} make prepare```
     - ```${COMPILE} make modules_prepare```
     - ```${COMPILE} make uImage -j 8```
     - ```${COMPILE} make dtbs -j 8```
     - ```${COMPILE} make modules -j 8```
-7. install kernel and dtb to first partition of sdcard
-    - ```cp arch/arm/boot/uImage   /mnt/vfat/```
+6. install kernel and dtb to first partition of sdcard
+    - ```cp arch/arm/boot/uImage /mnt/vfat/```
     - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb /mnt/vfat/dtb```
-8. install modules to the second partition
+7. install modules to the second partition
     - still inside the build directory
     - ```mkdir rootfs```
     - ```${COMPILE} make modules_install INSTALL_MOD_PATH=rootfs```
-9. ```cd ~```
+8. ```cd ~```
+
+#### to rebuild the .config from scratch
+1. generate the .config file and add the following to the kernel
+    - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build```
+    - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build```
+    - select the following
+        - ```bash
+        [*] Enable loadable module support  —>
+            [*] Forced module loading
+            [*] Module unloading
+            [*] Forced module unloading
+        ```
+        - ```bash
+        System Type —>
+        [*] Allwinner SoCs —>
+            [*] Allwinner A20 (sun7i) SoCs support
+        ```
+        - ```bash
+        [*] USB support —>
+            <M> USB Mass Storage —>
+            --- all as M
+        ```
+        - ```bash
+        [*] Device Drivers ->
+            [*] USB Serial Converter —>
+                <M> USB Generic Serial Driver
+                <M> USB FTDI
+        ```
+        - ```bash
+        [*] Device Drivers ->
+            [*] Network Device Support ->
+                [*] Wireless Lan
+            [*] Staging —>
+                <M> RTL8188EU
+                <M> as AP
+        ```
 
 ### install rootfs
 0. ensure the sdcard partitions are mounted (they should be from the previous steps)
@@ -193,28 +194,30 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 ### install modules and firmware
 1. ```cp -rfv linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
+2. ```cp -rfv rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/firmware/```
 
 ### os setup
 
 1. change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
-        ```bash
-        sudo vim /etc/network/interfaces
-        auto lo
-        iface lo inet loopback
-        auto wlan0
-        iface wlan0 inet static
-            address 192.168.2.1
-            netmask 255.255.255.0
-        ```
+        - edit /etc/network/interfaces
+            ```bash
+            auto lo
+            iface lo inet loopback
+
+            auto wlan0
+            iface wlan0 inet static
+                address 192.168.2.1
+                netmask 255.255.255.0
+            ```
         - ```sudo apt-get install dnsmasq```
             - edit /etc/dnsmasq to have
-              ```bash
-              local=/localnet/
-              address=/gcs/127.0.0.1
-              interface=wlan0
-              dhcp-range=wlan0,192.168.2.50,192.168.2.100,12h
-              ```
+                ```bash
+                local=/localnet/
+                address=/gcs/127.0.0.1
+                interface=wlan0
+                dhcp-range=wlan0,192.168.2.50,192.168.2.100,12h
+                ```
     - build and install hostapd
         - ```git clone https://github.com/jenssegers/RTL8188-hostapd```
         - ```cd RTL8188-hostapd/hostapd```
@@ -223,7 +226,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - ```sudo update-rc.d hostapd defaults```
         - ```sudo update-rc.d hostapd enable```
     - modify hostapd config file
-        - ```bash
+        ```bash
         sudo vim /etc/hostapd/hostapd.conf
         interface=wlan0
         ssid=gcs
@@ -232,18 +235,78 @@ script.bin is a file with very important configuration parameters like port GPIO
         auth_algs=1
         wmm_enabled=0
         ```
-2. Turn on UART2
+    - WHOA need to add the dnsmasq stuff
+
+2. Turn on UART2 for GPS
     - add this to /etc/init/uart2.service
         ```bash
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
         ```
 3. check that our 3dr radio is up
+4. set hostname
+    - ```sudo vim /etc/hostname```
+        - gcs or gcs0001
+    - ```sudo vim /etc/hosts```
+        - same as above
+5. configure avahi-daemon
+    - ```sudo update-rc.d avahi-daemon defaults```
+    - copy over afpd.service from dapper-hw
+        - ```cp ~/dapper-hw/afpd.service /etc/avahi/services/afpd.service```
+    - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
+6. edit gpsd
+    ```bash
+    ubuntu@arm:~$ sudo dpkg-reconfigure gpsd
+    ubuntu@arm:~$ cat /etc/default/gpsd
 
+    # Default settings for gpsd.
+    # Please do not edit this file directly - use `dpkg-reconfigure gpsd' to
+    # change the options.
+    START_DAEMON="true"
+    GPSD_OPTIONS="-n -G"
+    DEVICES="/dev/ttyO4"
+    BAUDRATE="9600"
+    USBAUTO="false"
+    GPSD_SOCKET="/var/run/gpsd.sock"
+    ```
+7. reboot
+    - ```sudo reboot```
 
 ### install gcs
+1. nodejs symlink
+    - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
+2. GCS software prerequisites
+    - ```sudo npm install -g grunt-cli bower forever nodemon```
+3. copy over keys
+    - ```scp ~/.ssh/github-keys* linaro@gcs:/home/linaro/.ssh/```
+    - if no .ssh folder is on the gcs side
+        - follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
+        - or quickly generate a pair on the gcs then delete them
+        - ```ssh-keygen -t rsa```
+            - choose defaults, no password
+        - ```rm .ssh/id_rsa*```
+        - now scp the keys over
+4. test that you can connect to github
+    - ```ssh -T git@github.com```
+4. clone repo
+    ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
+    ```bash
+    cd dapper-gcs
+    git submodule init
+    git update
+    npm install
+    bower install
+    grunt
+    ```
+- copy over the upstart script
+    - ```sudo cp dapper-gcs.conf /etc/init/```
+    - ```sudo start dapper-gcs```
 
 references
+- [clean build of uSD card]()
 - [wifi ap mode](http://forum.odroid.com/viewtopic.php?f=52&t=1674)
 - [usb otg to host](http://learn.linksprite.com/pcduino/usb-development/turn-usb-otg-port-into-an-extra-usb-host-pcduino3/)
 - [pinouts](http://learn.linksprite.com/pcduino/arduino-ish-program/uart/how-to-directly-manupilate-uart-of-pcduino-under-linux/)
+- [1. axp209 power management unit](http://learn.linksprite.com/pcduino/arduino-ish-program/adc/axp-209-internal-temperature/)
+- [2. axp209 pmu kernel inclusion](https://github.com/linux-sunxi/linux-sunxi/commit/fcec507519157765c689ab3473a9e72d8b6df453)
+- [external interrupts](http://pcduino.com/forum/index.php?topic=4727.0)
