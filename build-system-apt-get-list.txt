@@ -5,3 +5,4 @@ ckermit
 gparted
 libncurses5-dev
 git
+u-boot-tools
