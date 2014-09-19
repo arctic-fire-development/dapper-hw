@@ -11,16 +11,17 @@ All steps performed are done on 32bit ubuntu distribution
 1. Grab the ARM cross compiler
     
     ```bash
-    wilsonrm@mint17 ~ $ wget -c https://releases.linaro.org/latest/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.06_linux.tar.xz
-    wilsonrm@mint17 ~ $ tar xf gcc-linaro-arm-linux-gnueabihf-4.9-2014.06_linux.tar.xz
-    wilsonrm@mint17 ~ $ export CC=`pwd`/gcc-linaro-arm-linux-gnueabihf-4.9-2014.06_linux/bin/arm-linux-gnueabihf-
+    wilsonrm@mint17 ~ $ sudo apt-get install libc6-dev-i386 lib32stdc++-4.8-dev
+    wilsonrm@mint17 ~ $ wget -c https://releases.linaro.org/latest/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
+    wilsonrm@mint17 ~ $ tar xf gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
+    wilsonrm@mint17 ~ $ export CC=`pwd`/gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux/bin/arm-linux-gnueabihf-
     ```
     
     verify it works
     
     ```bash
     wilsonrm@mint17 ~ $ ${CC}gcc --version
-    arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.9-2014.06 - Linaro GCC 4.9-2014.06) 4.9.1 20140529 (prerelease)
+    arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.9-2014.08 - Linaro GCC 4.9-2014.08) 4.9.2 20140811 (prerelease)
     Copyright (C) 2014 Free Software Foundation, Inc.
     This is free software; see the source for copying conditions.  There is NO
     warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

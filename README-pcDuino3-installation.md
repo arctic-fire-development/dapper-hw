@@ -310,3 +310,5 @@ references
 - [1. axp209 power management unit](http://learn.linksprite.com/pcduino/arduino-ish-program/adc/axp-209-internal-temperature/)
 - [2. axp209 pmu kernel inclusion](https://github.com/linux-sunxi/linux-sunxi/commit/fcec507519157765c689ab3473a9e72d8b6df453)
 - [external interrupts](http://pcduino.com/forum/index.php?topic=4727.0)
+- [upstart script](http://unix.stackexchange.com/questions/84252/how-to-start-a-service-automatically-when-ubuntu-starts)
+- [kernel build](http://www.crashcourse.ca/wiki/index.php/Building_kernel_out_of_tree)
