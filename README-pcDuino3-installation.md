@@ -129,22 +129,24 @@ script.bin is a file with very important configuration parameters like port GPIO
 4. make build directory
     - ```mkdir build```
 5. build the kernel (uImage), dtb, and modules
-    - ```cd build```
     - copy the .config from dapper-hw
-        - ```cp ~/dapper-hw/kernel.config ./.config```
-    - ```COMPILE='ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000'```
-    - ```${COMPILE} make prepare```
-    - ```${COMPILE} make modules_prepare```
-    - ```${COMPILE} make uImage -j 8```
-    - ```${COMPILE} make dtbs -j 8```
-    - ```${COMPILE} make modules -j 8```
+        - ```cp ~/dapper-hw/kernel.config ./build/.config```
+    - make oldconfig
+        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ oldconfig```
+    - make uImage
+        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ uImage -j 4```
+    - make dtbs
+        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ dtbs -j 4```
+    - make modules
+        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules -j 4```
+
 6. install kernel and dtb to first partition of sdcard
     - ```cp arch/arm/boot/uImage /mnt/vfat/```
     - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb /mnt/vfat/dtb```
 7. install modules to the second partition
     - still inside the build directory
-    - ```mkdir rootfs```
-    - ```${COMPILE} make modules_install INSTALL_MOD_PATH=rootfs```
+    - ```mkdir ./build/rootfs```
+    - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 modules_install INSTALL_MOD_PATH=./rootfs```
 8. ```cd ~```
 
 #### to rebuild the .config from scratch
