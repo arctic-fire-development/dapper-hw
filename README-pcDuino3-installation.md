@@ -2,14 +2,14 @@
 
 ### setup dev platform
 
-1. install pre-reqs
+1.  install pre-reqs
     - ```sudo apt-get install -y $(cat build-system-apt-get-list.txt | awk '{print $1}')```
-2. if in virtualbox, add the user to the vboxsf group
+2.  if in virtualbox, add the user to the vboxsf group
     - ```sudo usermod -a -G vboxsf wilsonrm```
     - re- login for changes to take effect
-3. download u-boot, kernel, rootfs, wireless AP daemon, sunxi tools and boards
+3.  download u-boot, kernel, rootfs, wireless AP daemon, sunxi tools and boards
     - run ```./clone-repos.sh```
-4. if on OS X
+4.  if on OS X
     - you will need the drivers for the usb-tty device
         - ```git clone https://github.com/changux/pl2303osx.git```
         - double click PL2303_Serial-USB_on_OSX_Lion.pkg
@@ -29,8 +29,7 @@
         set rec pack 1000
         set send pack 1000
         set window 5
-        set prompt Kermit>
-        ```
+        set prompt Kermit>```
 
 ### prep sd card
 
@@ -38,9 +37,13 @@
 2.  use dmesg or similar to get the device location (/dev/sdc or /dev/mmcblk0, etc)
     - ```CARD=/dev/sdc```
 3.  unmount it
+    - ```sudo umount /dev/sdc```
 4.  format with gparted or similar
     - be sure to have dos partition table created
+5.  clean it with dd, skip the partition table
+    - ```sudo dd if=/dev/zero of=/dev/sdc bs=1k count=1023 seek=1```
 5.  ensure it is still unmounted
+    - ```sudo umount /dev/sdc```
 6.  make new partitions
     ```bash
     # fdisk ${CARD}
@@ -86,49 +89,49 @@
         - use /dev/sdc1 or similar if uSD card device is sdc
     - ```sudo mkfs.ext4 /dev/mmcblk0p2```
         - use /dev/sdc2 or similar if uSD card device is sdc
+8.  mount the new partitions
+    - ```sudo mkdir /mnt/vfat /mnt/ext4```
+    - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
+    - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
+
+### compile u-boot
+
+1.  ```cd u-boot-sunxi```
+2.  ```mkdir build```
+3.  ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
+4.  ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
+5.  ```cd build```
+6.  ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
+7.  copy over u-boot uEnv.txt
+    - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/uEnv.txt```
 
 ### build the board specific script.bin
 
 script.bin is a file with very important configuration parameters like port GPIO assignments, DDR memory parameters, etc
 
-1.  mount first partition
-    - ```mkdir /mnt/vfat```
-    - ```sudo mount -t vfat /dev/mmcblk0p1 /mnt/vfat```
-2. ```cd sunxi-tools```
+1.  ```cd sunxi-tools```
     - ```make fex2bin```
     - ```cp fex2bin ~/bin```
-3. ```cd sunxi-boards/sys_config/a20```
+2.  ```cd sunxi-boards/sys_config/a20```
     - ```cp linksprite_pcduino3.fex original-linksprite_pcduino3.fex```
     - edit linksprite_pcduino3.fex
         - for usbc0
         - change ```usb_port_type``` from 0 to 1 to make it a USB host
     - ```fex2bin linksprite_pcduino3.fex > script.bin```
-4.  ```cp script.bin /mnt/sd```
-5.  ```sync```
-6.  ```umount /dev/sdX1```
-
-### compile u-boot
-
-1. ```cd u-boot-sunxi```
-2. ```mkdir build```
-3. ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
-4. ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
-5. ```cd build```
-6. ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
-7. copy over u-boot uEnv.txt
-    - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/uEnv.txt```
+3.  ```cp script.bin /mnt/vfat```
+4.  ```sync```
 
 ### compile linux kernel
-1. ensure the sdcard partitions are mounted
+1.  ensure the sdcard partitions are mounted
     - ```mkdir /mnt/vfat /mnt/ext4```
     - ```sudo mount -t vfat /dev/sdc1 /mnt/vfat```
     - ```sudo mount -t ext4 /dev/sdc2 /mnt/ext4```
-2. ```cd linux-sunxi```
-3. verify you are in the sunxi-next branch
+2.  ```cd linux-sunxi```
+3.  verify you are in the sunxi-next branch
     - ```git status```
-4. make build directory
+4.  make build directory
     - ```mkdir build```
-5. build the kernel (uImage), dtb, and modules
+5.  build the kernel (uImage), dtb, and modules
     - copy the .config from dapper-hw
         - ```cp ~/dapper-hw/kernel.config ./build/.config```
     - make oldconfig
@@ -140,17 +143,17 @@ script.bin is a file with very important configuration parameters like port GPIO
     - make modules
         - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules -j 4```
 
-6. install kernel and dtb to first partition of sdcard
+6.  install kernel and dtb to first partition of sdcard
     - ```cp arch/arm/boot/uImage /mnt/vfat/```
     - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb /mnt/vfat/dtb```
-7. install modules to the second partition
+7.  install modules to the second partition
     - still inside the build directory
     - ```mkdir ./build/rootfs```
-    - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 modules_install INSTALL_MOD_PATH=./rootfs```
-8. ```cd ~```
+    - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules_install INSTALL_MOD_PATH=./rootfs```
+8.  ```cd ~```
 
 #### to rebuild the .config from scratch
-1. generate the .config file and add the following to the kernel
+1.  generate the .config file and add the following to the kernel
     - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build```
     - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build```
     - select the following
@@ -186,21 +189,22 @@ script.bin is a file with very important configuration parameters like port GPIO
         ```
 
 ### install rootfs
-0. ensure the sdcard partitions are mounted (they should be from the previous steps)
+0.  ensure the sdcard partitions are mounted (they should be from the previous steps)
     - ```sudo mount```
     - if not present, then
         - ```mkdir /mnt/vfat /mnt/ext4```
         - ```sudo mount -t vfat /dev/sdc1 /mnt/vfat```
         - ```sudo mount -t ext4 /dev/sdc2 /mnt/ext4```
-1. ```sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz```
+1.  ```sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz```
 
 ### install modules and firmware
-1. ```cp -rfv linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
-2. ```cp -rfv rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/firmware/```
+1.  ```sudo cp -rfv linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
+2.  ```sudo mkdir /mnt/ext4/lib/firmware```
+3.  ```sudo cp -rfv rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/firmware/```
 
 ### os setup
 
-1. change wifi to be AP
+1.  change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
         - edit /etc/network/interfaces
             ```bash
@@ -239,24 +243,24 @@ script.bin is a file with very important configuration parameters like port GPIO
         ```
     - WHOA need to add the dnsmasq stuff
 
-2. Turn on UART2 for GPS
+2.  Turn on UART2 for GPS
     - add this to /etc/init/uart2.service
         ```bash
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
         ```
-3. check that our 3dr radio is up
-4. set hostname
+3.  check that our 3dr radio is up
+4.  set hostname
     - ```sudo vim /etc/hostname```
         - gcs or gcs0001
     - ```sudo vim /etc/hosts```
         - same as above
-5. configure avahi-daemon
+5.  configure avahi-daemon
     - ```sudo update-rc.d avahi-daemon defaults```
     - copy over afpd.service from dapper-hw
         - ```cp ~/dapper-hw/afpd.service /etc/avahi/services/afpd.service```
     - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
-6. edit gpsd
+6.  edit gpsd
     ```bash
     ubuntu@arm:~$ sudo dpkg-reconfigure gpsd
     ubuntu@arm:~$ cat /etc/default/gpsd
@@ -271,15 +275,15 @@ script.bin is a file with very important configuration parameters like port GPIO
     USBAUTO="false"
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
-7. reboot
+7.  reboot
     - ```sudo reboot```
 
 ### install gcs
-1. nodejs symlink
+1.  nodejs symlink
     - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
-2. GCS software prerequisites
+2.  GCS software prerequisites
     - ```sudo npm install -g grunt-cli bower forever nodemon```
-3. copy over keys
+3.  copy over keys
     - ```scp ~/.ssh/github-keys* linaro@gcs:/home/linaro/.ssh/```
     - if no .ssh folder is on the gcs side
         - follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
@@ -288,9 +292,9 @@ script.bin is a file with very important configuration parameters like port GPIO
             - choose defaults, no password
         - ```rm .ssh/id_rsa*```
         - now scp the keys over
-4. test that you can connect to github
+4.  test that you can connect to github
     - ```ssh -T git@github.com```
-4. clone repo
+5.  clone repo
     ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
     ```bash
     cd dapper-gcs
@@ -300,7 +304,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     bower install
     grunt
     ```
-- copy over the upstart script
+6.  copy over the upstart script
     - ```sudo cp dapper-gcs.conf /etc/init/```
     - ```sudo start dapper-gcs```
 
