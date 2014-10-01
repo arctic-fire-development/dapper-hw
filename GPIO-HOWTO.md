@@ -5,7 +5,7 @@ Accessing the GPIO pins through sysfs with mainline kernel
 
 The GPIO pins can be accessed from user space using sysfs.
 
-To enabled this you need the following kernel option enabled: CONFIG_GPIO_SYSFS
+To enable this you need the following kernel option enabled: CONFIG_GPIO_SYSFS
 
 ```Device Drivers  ---> GPIO Support  ---> /sys/class/gpio/... (sysfs interface)```
 
