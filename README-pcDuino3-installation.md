@@ -30,69 +30,9 @@
         set send pack 1000
         set window 5
         set prompt Kermit>```
-
-### prep sd card
-
-1.  insert >4GB into computer
-2.  use dmesg or similar to get the device location (/dev/sdc or /dev/mmcblk0, etc)
-    - ```CARD=/dev/sdc```
-3.  unmount it
-    - ```sudo umount /dev/sdc```
-4.  format with gparted or similar
-    - be sure to have dos partition table created
-5.  clean it with dd, skip the partition table
-    - ```sudo dd if=/dev/zero of=/dev/sdc bs=1k count=1023 seek=1```
-5.  ensure it is still unmounted
-    - ```sudo umount /dev/sdc```
-6.  make new partitions
-    ```bash
-    # fdisk ${CARD}
-
-    Command (m for help): n
-    Partition type:
-       p   primary (0 primary, 0 extended, 4 free)
-       e   extended
-    Select (default p): p
-    Partition number (1-4, default 1): 1
-    First sector (2048-15523839, default 2048): 2048
-    Last sector, +sectors or +size{K,M,G} (2048-15523839, default 15523839): +15M
-
-    Command (m for help): n
-    Partition type:
-       p   primary (1 primary, 0 extended, 3 free)
-       e   extended
-    Select (default p): p
-    Partition number (1-4, default 2): 2
-    First sector (32768-15523839, default 32768): 32768
-    Last sector, +sectors or +size{K,M,G} (32768-15523839, default 15523839): +240M
-
-    Command (m for help): p
-
-    Disk /dev/mmcblk0: 7948 MB, 7948206080 bytes
-    4 heads, 16 sectors/track, 242560 cylinders, total 15523840 sectors
-    Units = sectors of 1 * 512 = 512 bytes
-    Sector size (logical/physical): 512 bytes / 512 bytes
-    I/O size (minimum/optimal): 512 bytes / 512 bytes
-    Disk identifier: 0x17002d14
-
-            Device Boot      Start         End      Blocks   Id  System
-    /dev/mmcblk0p1            2048       32767       15360   83  Linux
-    /dev/mmcblk0p2           32768      524287      245760   83  Linux
-
-    Command (m for help): w
-    The partition table has been altered!
-
-    Calling ioctl() to re-read partition table.
-    ```
-7.  format partitions
-    - ```sudo mkfs.vfat /dev/mmcblk0p1```
-        - use /dev/sdc1 or similar if uSD card device is sdc
-    - ```sudo mkfs.ext4 /dev/mmcblk0p2```
-        - use /dev/sdc2 or similar if uSD card device is sdc
-8.  mount the new partitions
-    - ```sudo mkdir /mnt/vfat /mnt/ext4```
-    - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
-    - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
+5.  make a buildout directory
+    - ```cd ~```
+    - ```mkdir pcduino-buildout```
 
 ### compile u-boot
 
@@ -100,10 +40,7 @@
 2.  ```mkdir build```
 3.  ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
 4.  ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
-5.  ```cd build```
-6.  ```sudo dd if=u-boot-sunxi-with-spl.bin of=${CARD} bs=1024 seek=8```
-7.  copy over u-boot uEnv.txt
-    - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/uEnv.txt```
+5.  ```cp build/u-boot-sunxi-with-spl.bin ~/pcduino-buildout/```
 
 ### build the board specific script.bin
 
@@ -111,45 +48,37 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 1.  ```cd sunxi-tools```
     - ```make fex2bin```
-    - ```cp fex2bin ~/bin```
-2.  ```cd sunxi-boards/sys_config/a20```
-    - ```cp linksprite_pcduino3.fex original-linksprite_pcduino3.fex```
-    - edit linksprite_pcduino3.fex
-        - for usbc0
+2.  ```cd sunxi-boards```
+    - ```cp sys_config/a20/linksprite_pcduino3.fex ~/pcduino-buildout```
+    - ```cd ~/pcduino-buildout```
+3.  edit linksprite_pcduino3.fex
+    - for usbc0
         - change ```usb_port_type``` from 0 to 1 to make it a USB host
-    - ```fex2bin linksprite_pcduino3.fex > script.bin```
-3.  ```cp script.bin /mnt/vfat```
-4.  ```sync```
+    - ```~/sunxi-tools/fex2bin linksprite_pcduino3.fex > script.bin```
+4. should now have script.bin in ~/pcduino-buildout/
 
 ### compile linux kernel
-1.  ensure the sdcard partitions are mounted
-    - ```mkdir /mnt/vfat /mnt/ext4```
-    - ```sudo mount -t vfat /dev/sdc1 /mnt/vfat```
-    - ```sudo mount -t ext4 /dev/sdc2 /mnt/ext4```
-2.  ```cd linux-sunxi```
-3.  verify you are in the sunxi-next branch
+
+1.  ```cd linux-sunxi```
+2.  verify you are in the sunxi-next branch
     - ```git status```
-4.  make build directory
+3.  make build directory
     - ```mkdir build```
-5.  build the kernel (uImage), dtb, and modules
+4.  build the kernel (uImage), dtb, and modules
     - copy the .config from dapper-hw
         - ```cp ~/dapper-hw/kernel.config ./build/.config```
     - make oldconfig
         - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ oldconfig```
-    - make uImage
-        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ uImage -j 4```
-    - make dtbs
-        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ dtbs -j 4```
-    - make modules
-        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules -j 4```
+    - make uImage dtbs and modules
+        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ uImage dtbs modules -j 4```
 
-6.  install kernel and dtb to first partition of sdcard
-    - ```cp arch/arm/boot/uImage /mnt/vfat/```
-    - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb /mnt/vfat/dtb```
-7.  install modules to the second partition
-    - still inside the build directory
-    - ```mkdir ./build/rootfs```
-    - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules_install INSTALL_MOD_PATH=./rootfs```
+6.  copy kernel and dtb to ~/pcduino-buildout
+    - ```cp arch/arm/boot/uImage ~/pcduino-buildout/```
+    - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb ~/pcduino-buildout/dtb```
+        - notice we renamed it on the fly to "dtb"
+7.  install modules to the pcduino-buildout folder
+    - ```mkdir ~/pcduino-buildout/rootfs```
+    - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules_install INSTALL_MOD_PATH=~/pcduino-buildout/rootfs```
 8.  ```cd ~```
 
 #### to rebuild the .config from scratch
@@ -187,46 +116,142 @@ script.bin is a file with very important configuration parameters like port GPIO
                 <M> RTL8188EU
                 <M> as AP
         ```
+## Installation
+### prep sd card
+
+1.  insert >4GB into computer
+2.  use dmesg or similar to get the device location (/dev/sdb or /dev/mmcblk0, etc)
+    - ```CARD=/dev/sdb```
+3.  unmount it
+    - ```sudo umount /dev/sdb```
+4.  format with gparted or similar
+    - be sure to have dos partition table created
+5.  clean it with dd, skip the partition table
+    - ```sudo dd if=/dev/zero of=/dev/sdb bs=1k count=1023 seek=1```
+5.  ensure it is still unmounted
+    - ```sudo umount /dev/sdb```
+6.  make new partitions
+    ```bash
+    fdisk /dev/sdb
+
+    Command (m for help): n
+    Partition type:
+       p   primary (0 primary, 0 extended, 4 free)
+       e   extended
+    Select (default p): p
+    Partition number (1-4, default 1): 1
+    First sector (2048-15523839, default 2048): 2048
+    Last sector, +sectors or +size{K,M,G} (2048-15523839, default 15523839): +15M
+
+    Command (m for help): n
+    Partition type:
+       p   primary (1 primary, 0 extended, 3 free)
+       e   extended
+    Select (default p): p
+    Partition number (1-4, default 2): 2
+    First sector (32768-15523839, default 32768): 32768
+    Last sector, +sectors or +size{K,M,G} (32768-15523839, default 15523839): +240M
+
+    Command (m for help): p
+
+    Disk /dev/sdb: 7948 MB, 7948206080 bytes
+    4 heads, 16 sectors/track, 242560 cylinders, total 15523840 sectors
+    Units = sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical): 512 bytes / 512 bytes
+    I/O size (minimum/optimal): 512 bytes / 512 bytes
+    Disk identifier: 0x17002d14
+
+            Device Boot      Start         End      Blocks   Id  System
+    /dev/sdb1            2048       32767       15360   83  Linux
+    /dev/sdb2           32768      524287      245760   83  Linux
+
+    Command (m for help): w
+    The partition table has been altered!
+
+    Calling ioctl() to re-read partition table.
+    ```
+7.  format partitions
+    - ```sudo mkfs.vfat /dev/sdb1```
+        - use /dev/mmcblk0p1 or similar if uSD card device is mmcblk0
+    - ```sudo mkfs.ext4 /dev/sdb2```
+        - use /dev/mmcblk0p2 or similar if uSD card device is mmcblk0
+8.  mount the new partitions
+    - ```sudo mkdir /mnt/vfat /mnt/ext4```
+    - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
+    - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
+
+### install u-boot
+1.  ```sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8```
+2.  copy over u-boot uEnv.txt
+    - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/```
+3.  copy over script.bin
+    - ```sudo cp pcduino-buildout/script.bin /mnt/vfat/```
 
 ### install rootfs
 0.  ensure the sdcard partitions are mounted (they should be from the previous steps)
     - ```sudo mount```
     - if not present, then
         - ```mkdir /mnt/vfat /mnt/ext4```
-        - ```sudo mount -t vfat /dev/sdc1 /mnt/vfat```
-        - ```sudo mount -t ext4 /dev/sdc2 /mnt/ext4```
+        - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
+        - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
 1.  ```sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz```
 
 ### install modules and firmware
-1.  ```sudo cp -rfv linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
-2.  ```sudo mkdir /mnt/ext4/lib/firmware```
-3.  ```sudo cp -rfv rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/firmware/```
+1.  ```sudo cp -rfv ~/linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
+2.  ```sudo mkdir -p /mnt/ext4/lib/rtlwifi/firmware```
+3.  ```sudo cp -rfv ~/rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/rtlwifi/firmware/```
 
 ### os setup
+
+0.  enable hardline ethernet
+    - on your host machine, configure kermit to use the ftdi-usb cable as described earlier
+        - ```kermit```
+        - ```kermit> connect```
+    - you should now have a root session on the gcs box
+    - from the ftdi-usb terminal provided by kermit, do the following
+        - ```bash
+        sudo vi /etc/network/interface
+
+        auto eth0
+        iface eth0 inet dhcp
+        ```
+        - ```sudo ifup eth0```
+        - ```sudo ifconfig```
+            - look for the ip address: eg 192.168.1.105
+1.  - now from a terminal in your main machine, ssh into the gcs box
+        - ```ssh linaro@192.168.1.105```
+            - pw: linaro
+1.  install system requirements
+    - ```sudo apt-get install git vim bash-completion vim nodejs npm build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y```
+    - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
+    - ```sudo npm install -g grunt-cli bower forever nodemon```
+    - ```sudo rm -rf tmp```
 
 1.  change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
         - edit /etc/network/interfaces
             ```bash
-            auto lo
-            iface lo inet loopback
-
             auto wlan0
             iface wlan0 inet static
                 address 192.168.2.1
                 netmask 255.255.255.0
             ```
+    - install dnsmasq and configure
         - ```sudo apt-get install dnsmasq```
-            - edit /etc/dnsmasq to have
-                ```bash
-                local=/localnet/
-                address=/gcs/127.0.0.1
-                interface=wlan0
-                dhcp-range=wlan0,192.168.2.50,192.168.2.100,12h
-                ```
+        - edit /etc/dnsmasq.conf to have
+            ```bash
+            local=/local/
+            address=/gcs/127.0.0.1
+            interface=wlan0
+            dhcp-range=wlan0,192.168.2.50,192.168.2.100,255.255.255.0,12h
+            dhcp-option=252,"\n"
+            ```
     - build and install hostapd
         - ```git clone https://github.com/jenssegers/RTL8188-hostapd```
         - ```cd RTL8188-hostapd/hostapd```
+        - ```sudo vim defconfig```
+            - uncomment the line about 80211N
+        - ```cp defconfig .config```
         - ```sudo make```
         - ```sudo make install```
         - ```sudo update-rc.d hostapd defaults```
@@ -243,13 +268,34 @@ script.bin is a file with very important configuration parameters like port GPIO
         ```
     - WHOA need to add the dnsmasq stuff
 
+2. disable bluetooth
+    - ```sudo update-rc.d -f bluetooth remove```
+    - ```sudo vim /etc/init/bluetooth.conf
+        # add "never" to the start on line:
+        start on (never and started dbus)```
+
 2.  Turn on UART2 for GPS
     - add this to /etc/init/uart2.service
         ```bash
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
         ```
+    - for the gps shield, need arduino gpio pin 7 and 8
+        gpio_pin_7 = port:PH09<0><2><default><default>
+        gpio_pin_8 = port:PH10<0><2><default><default>
+
+        (position of letter in alphabet - 1) * 32 + pin number
+
+        (8 - 1) * 32 + 7 = 231
+        (8 - 1) * 32 + 8 = 232
+
+        echo 231 > /sys/class/gpio/export
+        echo 232 > /sys/class/gpio/export
+
+
 3.  check that our 3dr radio is up
+    - ```sudo lsmod```
+    - ```sudo lsusb```
 4.  set hostname
     - ```sudo vim /etc/hostname```
         - gcs or gcs0001
@@ -257,6 +303,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - same as above
 5.  configure avahi-daemon
     - ```sudo update-rc.d avahi-daemon defaults```
+    - ```sudo update-rc.d avahi-daemon enable```
     - copy over afpd.service from dapper-hw
         - ```cp ~/dapper-hw/afpd.service /etc/avahi/services/afpd.service```
     - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
@@ -270,7 +317,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     # change the options.
     START_DAEMON="true"
     GPSD_OPTIONS="-n -G"
-    DEVICES="/dev/ttyO4"
+    DEVICES="/dev/ttyO2"
     BAUDRATE="9600"
     USBAUTO="false"
     GPSD_SOCKET="/var/run/gpsd.sock"
@@ -299,7 +346,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     ```bash
     cd dapper-gcs
     git submodule init
-    git update
+    git submodule update
     npm install
     bower install
     grunt
