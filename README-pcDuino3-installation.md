@@ -128,6 +128,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     - be sure to have dos partition table created
 5.  clean it with dd, skip the partition table
     - ```sudo dd if=/dev/zero of=/dev/sdb bs=1k count=1023 seek=1```
+    - may need to create msdos partition table with gparted
 5.  ensure it is still unmounted
     - ```sudo umount /dev/sdb```
 6.  make new partitions
@@ -165,6 +166,12 @@ script.bin is a file with very important configuration parameters like port GPIO
     /dev/sdb1            2048       32767       15360   83  Linux
     /dev/sdb2           32768      524287      245760   83  Linux
 
+    Command (m for help): t
+    Partition number (1-4): 1
+
+    Hex code (type L to list codes): b
+    Changed system type of partition 1 to b (W95 FAT32)
+
     Command (m for help): w
     The partition table has been altered!
 
@@ -180,12 +187,14 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
     - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
 
-### install u-boot
+### install u-boot and kernel
 1.  ```sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8```
 2.  copy over u-boot uEnv.txt
     - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/```
 3.  copy over script.bin
     - ```sudo cp pcduino-buildout/script.bin /mnt/vfat/```
+4.  copy over uImage
+    - ```sudo cp pcduino-buildout/uImage /mnt/vfat/```
 
 ### install rootfs
 0.  ensure the sdcard partitions are mounted (they should be from the previous steps)
