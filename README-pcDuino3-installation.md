@@ -227,9 +227,11 @@ script.bin is a file with very important configuration parameters like port GPIO
         - ```sudo ifup eth0```
         - ```sudo ifconfig```
             - look for the ip address: eg 192.168.1.105
-1.  - now from a terminal in your main machine, ssh into the gcs box
-        - ```ssh linaro@192.168.1.105```
-            - pw: linaro
+1.  update system time
+    - ```ntpdate ntp.ubuntu.com pool.ntp.org```
+1.  now from a terminal in your main machine, ssh into the gcs box
+    - ```ssh linaro@192.168.1.105```
+        - pw: linaro
 1.  install system requirements
     - ```sudo apt-get install git vim bash-completion vim nodejs npm build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y```
     - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
@@ -245,7 +247,7 @@ script.bin is a file with very important configuration parameters like port GPIO
                 address 192.168.2.1
                 netmask 255.255.255.0
             ```
-    - install dnsmasq and configure
+    - install dnsmasq and configure (not for 3.4 kernel since already configured)
         - ```sudo apt-get install dnsmasq```
         - edit /etc/dnsmasq.conf to have
             ```bash
@@ -255,9 +257,14 @@ script.bin is a file with very important configuration parameters like port GPIO
             dhcp-range=wlan0,192.168.2.50,192.168.2.100,255.255.255.0,12h
             dhcp-option=252,"\n"
             ```
-    - build and install hostapd
-        - ```git clone https://github.com/jenssegers/RTL8188-hostapd```
-        - ```cd RTL8188-hostapd/hostapd```
+    - build and install wireless driver and hostapd
+        - ```sudo apt-get install libssl-dev```
+        - ```git clone https://github.com/lwfinger/rtl8188eu.git```
+        - ```cd rtl8188eu```
+        - ```vim Makefile```
+            - add CONFIG_AP_MODE = y
+        - ```sudo make install```
+        - ```cd rtl8188eu/hostapd-0.8/hostapd```
         - ```sudo vim defconfig```
             - uncomment the line about 80211N
         - ```cp defconfig .config```
@@ -271,11 +278,10 @@ script.bin is a file with very important configuration parameters like port GPIO
         interface=wlan0
         ssid=gcs
         hw_mode=g
-        channel=6
+        channel=1
         auth_algs=1
         wmm_enabled=0
         ```
-    - WHOA need to add the dnsmasq stuff
 
 2. disable bluetooth
     - ```sudo update-rc.d -f bluetooth remove```
@@ -326,7 +332,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     # change the options.
     START_DAEMON="true"
     GPSD_OPTIONS="-n -G"
-    DEVICES="/dev/ttyO2"
+    DEVICES="/dev/ttyS1"
     BAUDRATE="9600"
     USBAUTO="false"
     GPSD_SOCKET="/var/run/gpsd.sock"
@@ -335,7 +341,8 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```sudo reboot```
 
 ### install gcs
-1.  nodejs symlink
+1.  nodejs
+    - follow instructions at https://github.com/nodesource/distributions#deb
     - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
 2.  GCS software prerequisites
     - ```sudo npm install -g grunt-cli bower forever nodemon```
