@@ -29,7 +29,8 @@
         set rec pack 1000
         set send pack 1000
         set window 5
-        set prompt Kermit>```
+        set prompt Kermit>
+        ```
 5.  make a buildout directory
     - ```cd ~```
     - ```mkdir pcduino-buildout```
@@ -246,6 +247,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     - `ssh linaro@192.168.1.105`
         - pw: linaro
 1.  install system requirements
+    - clean apt cache: `rm /var/cache/apt/*.bin`
     - `sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y`
     - Install NodeJS from source.
         - `wget http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz`
@@ -257,7 +259,7 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 1.  change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
-        - edit /etc/network/interfaces
+        - edit `/etc/network/interfaces`
             - ```bash
             auto wlan0
             iface wlan0 inet static
@@ -265,12 +267,12 @@ script.bin is a file with very important configuration parameters like port GPIO
                 netmask 255.255.255.0
             ```
     - build and install wireless driver and hostapd
-        - ```sudo apt-get install libssl-dev```
+        - ```sudo apt-get install libssl-dev pcduino-linux-headers-3.4.79+```
         - ```git clone https://github.com/lwfinger/rtl8188eu.git```
         - ```cd rtl8188eu```
         - ```vim Makefile```
-            - add CONFIG_AP_MODE = y
-        - ```sudo make install```
+            - add above line 17: `CONFIG_AP_MODE = y`
+        - ```sudo make -j3 install```
         - ```cd rtl8188eu/hostapd-0.8/hostapd```
         - ```sudo vim defconfig```
             - uncomment the line about 80211N
