@@ -237,38 +237,32 @@ script.bin is a file with very important configuration parameters like port GPIO
         auto eth0
         iface eth0 inet dhcp
         ```
-        - ```sudo ifup eth0```
-        - ```sudo ifconfig```
+        - `sudo ifup eth0`
+        - `sudo ifconfig`
             - look for the ip address: eg 192.168.1.105
 1.  update system time
-    - ```ntpdate ntp.ubuntu.com pool.ntp.org```
+    - `ntpdate ntp.ubuntu.com pool.ntp.org`
 1.  now from a terminal in your main machine, ssh into the gcs box
-    - ```ssh linaro@192.168.1.105```
+    - `ssh linaro@192.168.1.105`
         - pw: linaro
 1.  install system requirements
-    - ```sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y```
-    - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
-    - ```sudo npm install -g grunt-cli bower forever nodemon```
-    - ```sudo rm -rf tmp```
+    - `sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y`
+    - Install NodeJS from source.
+        - `wget http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz`
+        - `tar xzvf node-v0.10.22.tar.gz && cd node-v0.10.22`
+        - `./configure --without-snapshot`
+        - `make && sudo make install`
+    - `sudo npm install -g grunt-cli bower forever nodemon`
+    - `sudo rm -rf tmp`
 
 1.  change wifi to be AP
     - to use wlan0 as a gateway, set wlan0 as static ip
         - edit /etc/network/interfaces
-            ```bash
+            - ```bash
             auto wlan0
             iface wlan0 inet static
                 address 192.168.2.1
                 netmask 255.255.255.0
-            ```
-    - install dnsmasq and configure (not for 3.4 kernel since already configured)
-        - ```sudo apt-get install dnsmasq```
-        - edit /etc/dnsmasq.conf to have
-            ```bash
-            local=/local/
-            address=/gcs/127.0.0.1
-            interface=wlan0
-            dhcp-range=wlan0,192.168.2.50,192.168.2.100,255.255.255.0,12h
-            dhcp-option=252,"\n"
             ```
     - build and install wireless driver and hostapd
         - ```sudo apt-get install libssl-dev```
