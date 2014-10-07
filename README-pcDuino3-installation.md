@@ -42,11 +42,7 @@
     - insert sd card
 5. reboot with bootable sd card
 6. [resize root fs](http://elinux.org/Beagleboard:Expanding_File_System_Partition_On_A_microSD)
-7. edit /etc/network/interfaces and add
-    - ```bash
-    auto eth0
-    iface eth0 inet dhcp
-    ```
+7. continue with "OS Setup" instructions below
 
 
 ## Build from Scratch
@@ -227,7 +223,7 @@ script.bin is a file with very important configuration parameters like port GPIO
 2.  ```sudo mkdir -p /mnt/ext4/lib/rtlwifi/firmware```
 3.  ```sudo cp -rfv ~/rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/rtlwifi/firmware/```
 
-### os setup
+## os setup
 
 0.  enable hardline ethernet
     - on your host machine, configure kermit to use the ftdi-usb cable as described earlier
