@@ -233,11 +233,12 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 0.  enable hardline ethernet
     - on your host machine, configure kermit to use the ftdi-usb cable as described earlier
-        - ```kermit```
-        - ```kermit> connect```
+        - `kermit`
+        - `kermit> connect`
     - you should now have a root session on the gcs box
     - from the ftdi-usb terminal provided by kermit, do the following
-        - ```bash
+        -
+        ```bash
         sudo vi /etc/network/interface
 
         auto eth0
