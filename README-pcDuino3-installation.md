@@ -278,9 +278,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - ```vim Makefile```
             - add above line 17: `CONFIG_AP_MODE = y`
         - ```sudo make -j3 install```
-        - ```cd rtl8188eu/hostapd-0.8/hostapd```
-        - ```sudo vim defconfig```
-            - uncomment the line about 80211N
+        - ```cd hostapd-0.8/hostapd```
         - ```cp defconfig .config```
         - ```sudo make```
         - ```sudo make install```
@@ -296,6 +294,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         auth_algs=1
         wmm_enabled=0
         ```
+    - reboot: `sudo reboot`
 
 2. disable bluetooth
     - ```sudo update-rc.d -f bluetooth remove```
