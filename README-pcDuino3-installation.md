@@ -100,29 +100,34 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build```
     - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build```
     - select the following
-        - ```bash
+        - modules:
+        ```bash
         [*] Enable loadable module support  —>
             [*] Forced module loading
             [*] Module unloading
             [*] Forced module unloading
         ```
-        - ```bash
+        - system selection
+        ```bash
         System Type —>
         [*] Allwinner SoCs —>
             [*] Allwinner A20 (sun7i) SoCs support
         ```
-        - ```bash
+        - USB
+        ```bash
         [*] USB support —>
             <M> USB Mass Storage —>
             --- all as M
         ```
-        - ```bash
+        - other device drivers
+        ```bash
         [*] Device Drivers ->
             [*] USB Serial Converter —>
                 <M> USB Generic Serial Driver
                 <M> USB FTDI
         ```
-        - ```bash
+        - yet more device drivers
+        ```bash
         [*] Device Drivers ->
             [*] Network Device Support ->
                 [*] Wireless Lan
