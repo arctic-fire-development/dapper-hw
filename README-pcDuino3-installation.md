@@ -34,6 +34,23 @@
     - ```cd ~```
     - ```mkdir pcduino-buildout```
 
+## Build from Existing pcDuino 3 board
+1. boot pcduino without an sd card
+2. as root, run ```board-config.sh```
+3. select update -> all
+4. select make_mmc_boot
+    - insert sd card
+5. reboot with bootable sd card
+6. [resize root fs](http://elinux.org/Beagleboard:Expanding_File_System_Partition_On_A_microSD)
+7. edit /etc/network/interfaces and add
+    - ```bash
+    auto eth0
+    iface eth0 inet dhcp
+    ```
+
+
+## Build from Scratch
+
 ### compile u-boot
 
 1.  ```cd u-boot-sunxi```
@@ -371,6 +388,29 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```sudo cp dapper-gcs.conf /etc/init/```
     - ```sudo start dapper-gcs```
 
+### Backup and Restore SD Card
+Backup
+1. Insert sd card to be cloned from
+2. use ```diskutil list`` to find it
+    - eg. /dev/disk2
+3. ```sudo dd if=/dev/disk2 of=~/Desktop/afdc-pcduino-06Oct2014.dmg```
+4. 15+ minutes later it should finish
+    -   ```bash
+        15130624+0 records in
+        15130624+0 records out
+        7746879488 bytes transferred in 915.097360 secs (8465634 bytes/sec)
+    ```
+
+Restore
+1. Insert sd card to be cloned to
+2. use diskutil to format it to msdos
+    - note the disk number, eg. /dev/disk2
+3. ```sudo dd if=~/Desktop/afdc-pcduino-06Oct2014.dmg of=/dev/disk2```
+
+### GPIO Notes
+- GPIO 7 and 8 are used for wifi, so we're not able to use the gps shield in it's current form
+    - need to run a wire from rx/tx breakout to gpio 0 & 1
+
 references
 - [clean build of uSD card]()
 - [wifi ap mode](http://forum.odroid.com/viewtopic.php?f=52&t=1674)
@@ -381,3 +421,4 @@ references
 - [external interrupts](http://pcduino.com/forum/index.php?topic=4727.0)
 - [upstart script](http://unix.stackexchange.com/questions/84252/how-to-start-a-service-automatically-when-ubuntu-starts)
 - [kernel build](http://www.crashcourse.ca/wiki/index.php/Building_kernel_out_of_tree)
+- [A20 PIO Guide](http://linux-sunxi.org/A20/PIO)
