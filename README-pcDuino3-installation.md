@@ -384,7 +384,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```sudo cp dapper-gcs.conf /etc/init/```
     - ```sudo start dapper-gcs```
 
-### Backup and Restore SD Card
+### Backup and Restore SD Card with OS X
 Backup
 1. Insert sd card to be cloned from
 2. use ```diskutil list`` to find it
@@ -406,6 +406,9 @@ Restore
 ### GPIO Notes
 - GPIO 7 and 8 are used for wifi, so we're not able to use the gps shield in it's current form
     - need to run a wire from rx/tx breakout to gpio 0 & 1
+
+### GPS PPS notes
+- http://www.lammertbies.nl/comm/info/GPS-time.html
 
 references
 - [clean build of uSD card]()
