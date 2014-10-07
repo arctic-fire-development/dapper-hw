@@ -237,7 +237,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - `kermit> connect`
     - you should now have a root session on the gcs box
     - from the ftdi-usb terminal provided by kermit, do the following
-        -
+        - add the interface
         ```bash
         sudo vi /etc/network/interface
 
