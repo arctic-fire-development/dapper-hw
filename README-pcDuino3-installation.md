@@ -246,7 +246,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     - ```ssh linaro@192.168.1.105```
         - pw: linaro
 1.  install system requirements
-    - ```sudo apt-get install git vim bash-completion vim nodejs npm build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y```
+    - ```sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y```
     - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
     - ```sudo npm install -g grunt-cli bower forever nodemon```
     - ```sudo rm -rf tmp```
