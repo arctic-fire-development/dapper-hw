@@ -3,15 +3,15 @@
 ### setup dev platform
 
 1.  install pre-reqs
-    - ```sudo apt-get install -y $(cat build-system-apt-get-list.txt | awk '{print $1}')```
+    - `sudo apt-get install -y $(cat build-system-apt-get-list.txt | awk '{print $1}')`
 2.  if in virtualbox, add the user to the vboxsf group
-    - ```sudo usermod -a -G vboxsf wilsonrm```
+    - `sudo usermod -a -G vboxsf wilsonrm`
     - re- login for changes to take effect
 3.  download u-boot, kernel, rootfs, wireless AP daemon, sunxi tools and boards
-    - run ```./clone-repos.sh```
+    - run `./clone-repos.sh`
 4.  if on OS X
     - you will need the drivers for the usb-tty device
-        - ```git clone https://github.com/changux/pl2303osx.git```
+        - `git clone https://github.com/changux/pl2303osx.git`
         - double click PL2303_Serial-USB_on_OSX_Lion.pkg
     - install kermit from here:
         - [kermit](http://www.kermitproject.org/ck90.html#source)
@@ -32,12 +32,12 @@
         set prompt Kermit>
         ```
 5.  make a buildout directory
-    - ```cd ~```
-    - ```mkdir pcduino-buildout```
+    - `cd ~`
+    - `mkdir pcduino-buildout`
 
 ## Build from Existing pcDuino 3 board
 1. boot pcduino without an sd card
-2. as root, run ```board-config.sh```
+2. as root, run `board-config.sh`
 3. select update -> all
 4. select make_mmc_boot
     - insert sd card
@@ -50,55 +50,55 @@
 
 ### compile u-boot
 
-1.  ```cd u-boot-sunxi```
-2.  ```mkdir build```
-3.  ```make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build```
-4.  ```make CROSS_COMPILE=arm-linux-gnueabihf- O=build```
-5.  ```cp build/u-boot-sunxi-with-spl.bin ~/pcduino-buildout/```
+1.  `cd u-boot-sunxi`
+2.  `mkdir build`
+3.  `make CROSS_COMPILE=arm-linux-gnueabihf- Linksprite_pcDuino3_config O=build`
+4.  `make CROSS_COMPILE=arm-linux-gnueabihf- O=build`
+5.  `cp build/u-boot-sunxi-with-spl.bin ~/pcduino-buildout/`
 
 ### build the board specific script.bin
 
 script.bin is a file with very important configuration parameters like port GPIO assignments, DDR memory parameters, etc
 
-1.  ```cd sunxi-tools```
-    - ```make fex2bin```
-2.  ```cd sunxi-boards```
-    - ```cp sys_config/a20/linksprite_pcduino3.fex ~/pcduino-buildout```
-    - ```cd ~/pcduino-buildout```
+1.  `cd sunxi-tools`
+    - `make fex2bin`
+2.  `cd sunxi-boards`
+    - `cp sys_config/a20/linksprite_pcduino3.fex ~/pcduino-buildout`
+    - `cd ~/pcduino-buildout`
 3.  edit linksprite_pcduino3.fex
     - for usbc0
-        - change ```usb_port_type``` from 0 to 1 to make it a USB host
-    - ```~/sunxi-tools/fex2bin linksprite_pcduino3.fex > script.bin```
+        - change `usb_port_type` from 0 to 1 to make it a USB host
+    - `~/sunxi-tools/fex2bin linksprite_pcduino3.fex > script.bin`
 4. should now have script.bin in ~/pcduino-buildout/
 
 ### compile linux kernel
 
-1.  ```cd linux-sunxi```
+1.  `cd linux-sunxi`
 2.  verify you are in the sunxi-next branch
-    - ```git status```
+    - `git status`
 3.  make build directory
-    - ```mkdir build```
+    - `mkdir build`
 4.  build the kernel (uImage), dtb, and modules
     - copy the .config from dapper-hw
-        - ```cp ~/dapper-hw/kernel.config ./build/.config```
+        - `cp ~/dapper-hw/kernel.config ./build/.config`
     - make oldconfig
-        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ oldconfig```
+        - `make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ oldconfig`
     - make uImage dtbs and modules
-        - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ uImage dtbs modules -j 4```
+        - `make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ uImage dtbs modules -j 4`
 
 6.  copy kernel and dtb to ~/pcduino-buildout
-    - ```cp arch/arm/boot/uImage ~/pcduino-buildout/```
-    - ```cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb ~/pcduino-buildout/dtb```
+    - `cp arch/arm/boot/uImage ~/pcduino-buildout/`
+    - `cp arch/arm/boot/dts/sun7i-a20-pcduino3.dtb ~/pcduino-buildout/dtb`
         - notice we renamed it on the fly to "dtb"
 7.  install modules to the pcduino-buildout folder
-    - ```mkdir ~/pcduino-buildout/rootfs```
-    - ```make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules_install INSTALL_MOD_PATH=~/pcduino-buildout/rootfs```
-8.  ```cd ~```
+    - `mkdir ~/pcduino-buildout/rootfs`
+    - `make ARCH=arm CFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CXXFLAGS="-mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4" CROSS_COMPILE=arm-linux-gnueabihf- LOADADDR=40008000 O=./build/ modules_install INSTALL_MOD_PATH=~/pcduino-buildout/rootfs`
+8.  `cd ~`
 
 #### to rebuild the .config from scratch
 1.  generate the .config file and add the following to the kernel
-    - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build```
-    - ```ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build```
+    - `ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make sunxi_defconfig O=build`
+    - `ARCH=arm CROSS_COMPILER=arm-linux-gnueabihf- make menuconfig O=build`
     - select the following
         - modules:
         ```bash
@@ -140,16 +140,16 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 1.  insert >4GB into computer
 2.  use dmesg or similar to get the device location (/dev/sdb or /dev/mmcblk0, etc)
-    - ```CARD=/dev/sdb```
+    - `CARD=/dev/sdb`
 3.  unmount it
-    - ```sudo umount /dev/sdb```
+    - `sudo umount /dev/sdb`
 4.  format with gparted or similar
     - be sure to have dos partition table created
 5.  clean it with dd, skip the partition table
-    - ```sudo dd if=/dev/zero of=/dev/sdb bs=1k count=1023 seek=1```
+    - `sudo dd if=/dev/zero of=/dev/sdb bs=1k count=1023 seek=1`
     - may need to create msdos partition table with gparted
 5.  ensure it is still unmounted
-    - ```sudo umount /dev/sdb```
+    - `sudo umount /dev/sdb`
 6.  make new partitions
     ```bash
     fdisk /dev/sdb
@@ -197,37 +197,37 @@ script.bin is a file with very important configuration parameters like port GPIO
     Calling ioctl() to re-read partition table.
     ```
 7.  format partitions
-    - ```sudo mkfs.vfat /dev/sdb1```
+    - `sudo mkfs.vfat /dev/sdb1`
         - use /dev/mmcblk0p1 or similar if uSD card device is mmcblk0
-    - ```sudo mkfs.ext4 /dev/sdb2```
+    - `sudo mkfs.ext4 /dev/sdb2`
         - use /dev/mmcblk0p2 or similar if uSD card device is mmcblk0
 8.  mount the new partitions
-    - ```sudo mkdir /mnt/vfat /mnt/ext4```
-    - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
-    - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
+    - `sudo mkdir /mnt/vfat /mnt/ext4`
+    - `sudo mount -t vfat /dev/sdb1 /mnt/vfat`
+    - `sudo mount -t ext4 /dev/sdb2 /mnt/ext4`
 
 ### install u-boot and kernel
-1.  ```sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8```
+1.  `sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8`
 2.  copy over u-boot uEnv.txt
-    - ```sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/```
+    - `sudo cp ~/dapper-hw/uEnv.txt /mnt/vfat/`
 3.  copy over script.bin
-    - ```sudo cp pcduino-buildout/script.bin /mnt/vfat/```
+    - `sudo cp pcduino-buildout/script.bin /mnt/vfat/`
 4.  copy over uImage
-    - ```sudo cp pcduino-buildout/uImage /mnt/vfat/```
+    - `sudo cp pcduino-buildout/uImage /mnt/vfat/`
 
 ### install rootfs
 0.  ensure the sdcard partitions are mounted (they should be from the previous steps)
-    - ```sudo mount```
+    - `sudo mount`
     - if not present, then
-        - ```mkdir /mnt/vfat /mnt/ext4```
-        - ```sudo mount -t vfat /dev/sdb1 /mnt/vfat```
-        - ```sudo mount -t ext4 /dev/sdb2 /mnt/ext4```
-1.  ```sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz```
+        - `mkdir /mnt/vfat /mnt/ext4`
+        - `sudo mount -t vfat /dev/sdb1 /mnt/vfat`
+        - `sudo mount -t ext4 /dev/sdb2 /mnt/ext4`
+1.  `sudo tar --strip-components=1 --show-transformed-names -C /mnt/ext4/ -zvxpf linaro-trusty-alip-20140821-681.tar.gz`
 
 ### install modules and firmware
-1.  ```sudo cp -rfv ~/linux-sunxi/rootfs/lib/ /mnt/ext4/lib/```
-2.  ```sudo mkdir -p /mnt/ext4/lib/rtlwifi/firmware```
-3.  ```sudo cp -rfv ~/rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/rtlwifi/firmware/```
+1.  `sudo cp -rfv ~/linux-sunxi/rootfs/lib/ /mnt/ext4/lib/`
+2.  `sudo mkdir -p /mnt/ext4/lib/rtlwifi/firmware`
+3.  `sudo cp -rfv ~/rtl8188eu/rtl8188eufw.bin /mnt/ext4/lib/rtlwifi/firmware/`
 
 ## os setup
 
@@ -266,20 +266,20 @@ script.bin is a file with very important configuration parameters like port GPIO
 1.  change wifi to be AP
     - `sudo vi  /etc/udev/rules.d/70-persistent-net.rules`
         - Replace the mac address with asterisk ‘*’, and remove all others.
-            ```bash
-            # USB device 0x0bda:0x8176 (usb)
-            SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="*", ATTR{dev_id}
-            =="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0"
-            ```
+        ```bash
+        # USB device 0x0bda:0x8176 (usb)
+        SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="*", ATTR{dev_id}
+        =="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0"
+        ```
         - Reboot pcDuino, and we find that there is only one possibility: wlan0 
     - to use wlan0 as a gateway, set wlan0 as static ip
         - edit `/etc/network/interfaces`
-            ```bash
-            auto wlan0
-            iface wlan0 inet static
-                address 192.168.100 .1
-                netmask 255.255.255.0
-            ```
+        ```bash
+        auto wlan0
+        iface wlan0 inet static
+            address 192.168.100 .1
+            netmask 255.255.255.0
+        ```
     - build and install wireless driver
         - `cd ~`
         - `sudo apt-get install libssl-dev pcduino-linux-headers-3.4.79+`
@@ -288,7 +288,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - `vim Makefile`
             - add above line 17: `CONFIG_AP_MODE = y`
         - `sudo make -j3 install`
-        - `sudo mv /lib/modules/3.4.79+/kernel/drivers/net/wireless/8188eu.ko /lib/modules/3.4.79+/kernel/drivers/net/wireless/rtl8188eu/8188eu.ko
+        - `sudo mv /lib/modules/3.4.79+/kernel/drivers/net/wireless/8188eu.ko /lib/modules/3.4.79+/kernel/drivers/net/wireless/rtl8188eu/8188eu.ko`
     - build and install hostapd
         - `cd ~`
         - `git clone https://github.com/jenssegers/RTL8188-hostapd`
@@ -301,15 +301,15 @@ script.bin is a file with very important configuration parameters like port GPIO
         - `sudo update-rc.d hostapd defaults`
         - `sudo update-rc.d hostapd enable`
     - modify hostapd config file
-        ```bash
-        sudo vim /etc/hostapd/hostapd.conf
-        interface=wlan0
-        ssid=gcs
-        hw_mode=g
-        channel=1
-        auth_algs=1
-        wmm_enabled=0
-        ```
+    ```bash
+    sudo vim /etc/hostapd/hostapd.conf
+    interface=wlan0
+    ssid=gcs
+    hw_mode=g
+    channel=1
+    auth_algs=1
+    wmm_enabled=0
+    ```
     - test configuration
         - `sudo hostapd -dd /etc/hostapd/hostapd.conf`
         
@@ -318,17 +318,17 @@ script.bin is a file with very important configuration parameters like port GPIO
 2. disable bluetooth
     - `sudo update-rc.d -f bluetooth remove`
     - `sudo vim /etc/init/bluetooth.conf`
-        ```bash
-        # add "never" to the start on line:
-        start on (never and started dbus)
-        ```
+    ```bash
+    # add "never" to the start on line:
+    start on (never and started dbus)
+    ```
 
 2.  Turn on UART2 for GPS (might not be required anymore since UART2 enabled in fex)
     - add this to /etc/init/uart2.service
-        ```bash
-        echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
-        echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
-        ```
+    ```bash
+    echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
+    echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
+    ```
     - for the gps shield, need arduino gpio pin 7 and 8
         gpio_pin_7 = port:PH09<0><2><default><default>
         gpio_pin_8 = port:PH10<0><2><default><default>
