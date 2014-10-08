@@ -322,26 +322,6 @@ script.bin is a file with very important configuration parameters like port GPIO
     # add "never" to the start on line:
     start on (never and started dbus)
     ```
-
-2.  Turn on UART2 for GPS (might not be required anymore since UART2 enabled in fex)
-    - add this to /etc/init/uart2.service
-    ```bash
-    echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
-    echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio1
-    ```
-    - for the gps shield, need arduino gpio pin 7 and 8
-        gpio_pin_7 = port:PH09<0><2><default><default>
-        gpio_pin_8 = port:PH10<0><2><default><default>
-
-        (position of letter in alphabet - 1) * 32 + pin number
-
-        (8 - 1) * 32 + 7 = 231
-        (8 - 1) * 32 + 8 = 232
-
-        echo 231 > /sys/class/gpio/export
-        echo 232 > /sys/class/gpio/export
-
-
 3.  check that our 3dr radio is up
     - `sudo lsmod`
     - `sudo lsusb`
@@ -404,6 +384,14 @@ script.bin is a file with very important configuration parameters like port GPIO
 6.  copy over the upstart script
     - `sudo cp dapper-gcs.conf /etc/init/`
     - `sudo start dapper-gcs`
+7.  copy the script.bin into the boot directory
+    - this turns off many coponents not used and enables a few we need like UART2
+    - determine where the boot partition is mounted
+        - `sudo mount`
+        - look for something like this:
+        - `/dev/mmcblk0p1 on /media/5E9E-BDAB type vfat`
+    - `sudo cd script.bin /media/5E9E-BDAB/`
+    - `sudo reboot`
 
 ### Backup and Restore SD Card with OS X
 
