@@ -264,6 +264,14 @@ script.bin is a file with very important configuration parameters like port GPIO
     - `sudo rm -rf tmp`
 
 1.  change wifi to be AP
+    - `sudo vi  /etc/udev/rules.d/70-persistent-net.rules`
+        - Replace the mac address with asterisk ‘*’, and remove all others.
+            - ```bash
+            # USB device 0x0bda:0x8176 (usb)
+            SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="*", ATTR{dev_id}
+            =="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0"
+            ```
+        - Reboot pcDuino, and we find that there is only one possibility: wlan0 
     - to use wlan0 as a gateway, set wlan0 as static ip
         - edit `/etc/network/interfaces`
             - ```bash
@@ -272,7 +280,8 @@ script.bin is a file with very important configuration parameters like port GPIO
                 address 192.168.100 .1
                 netmask 255.255.255.0
             ```
-    - build and install wireless driver and hostapd
+    - build and install wireless driver
+        - `cd ~`
         - `sudo apt-get install libssl-dev pcduino-linux-headers-3.4.79+`
         - `git clone https://github.com/lwfinger/rtl8188eu.git`
         - `cd rtl8188eu`
@@ -280,17 +289,15 @@ script.bin is a file with very important configuration parameters like port GPIO
             - add above line 17: `CONFIG_AP_MODE = y`
         - `sudo make -j3 install`
         - `sudo mv /lib/modules/3.4.79+/kernel/drivers/net/wireless/8188eu.ko /lib/modules/3.4.79+/kernel/drivers/net/wireless/rtl8188eu/8188eu.ko
-
+    - build and install hostapd
+        - `cd ~`
+        - `git clone https://github.com/jenssegers/RTL8188-hostapd`
         - `cd ~/RTL8188-hostapd/hostapd`
-        - `cd hostapd-0.8/hostapd`
-        - uncomment line about 80211N around line 
-        - `cp defconfig .config`
-        - `sudo make`
+        - `vim .config`
+            - add CONFIG_DRIVER_RTW=y at line 14
+            - uncomment line about 80211N around line 139
+        - `sudo make -j3`
         - `sudo make install`
-        - `cp -f ../scripts/init /etc/init.d/hostapd`
-        - `chmod +x /etc/init.d/hostapd`
-        - `mkdir -p /etc/hostapd`
-        - `cp -f ../scripts/hostapd.conf /etc/hostapd/`
         - `sudo update-rc.d hostapd defaults`
         - `sudo update-rc.d hostapd enable`
     - modify hostapd config file
@@ -304,6 +311,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         wmm_enabled=0
         ```
     - test configuration
+        - `sudo hostapd -dd /etc/hostapd/hostapd.conf`
         
     - reboot: `sudo reboot`
 
@@ -313,7 +321,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         # add "never" to the start on line:
         start on (never and started dbus)```
 
-2.  Turn on UART2 for GPS
+2.  Turn on UART2 for GPS (might not be required anymore since UART2 enabled in fex)
     - add this to /etc/init/uart2.service
         ```bash
         echo “3″ > /sys/devices/virtual/misc/gpio/mode/gpio0
