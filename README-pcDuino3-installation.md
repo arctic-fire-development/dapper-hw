@@ -269,22 +269,30 @@ script.bin is a file with very important configuration parameters like port GPIO
             - ```bash
             auto wlan0
             iface wlan0 inet static
-                address 192.168.2.1
+                address 192.168.100 .1
                 netmask 255.255.255.0
             ```
     - build and install wireless driver and hostapd
-        - ```sudo apt-get install libssl-dev pcduino-linux-headers-3.4.79+```
-        - ```git clone https://github.com/lwfinger/rtl8188eu.git```
-        - ```cd rtl8188eu```
-        - ```vim Makefile```
+        - `sudo apt-get install libssl-dev pcduino-linux-headers-3.4.79+`
+        - `git clone https://github.com/lwfinger/rtl8188eu.git`
+        - `cd rtl8188eu`
+        - `vim Makefile`
             - add above line 17: `CONFIG_AP_MODE = y`
-        - ```sudo make -j3 install```
-        - ```cd hostapd-0.8/hostapd```
-        - ```cp defconfig .config```
-        - ```sudo make```
-        - ```sudo make install```
-        - ```sudo update-rc.d hostapd defaults```
-        - ```sudo update-rc.d hostapd enable```
+        - `sudo make -j3 install`
+        - `sudo mv /lib/modules/3.4.79+/kernel/drivers/net/wireless/8188eu.ko /lib/modules/3.4.79+/kernel/drivers/net/wireless/rtl8188eu/8188eu.ko
+
+        - `cd ~/RTL8188-hostapd/hostapd`
+        - `cd hostapd-0.8/hostapd`
+        - uncomment line about 80211N around line 
+        - `cp defconfig .config`
+        - `sudo make`
+        - `sudo make install`
+        - `cp -f ../scripts/init /etc/init.d/hostapd`
+        - `chmod +x /etc/init.d/hostapd`
+        - `mkdir -p /etc/hostapd`
+        - `cp -f ../scripts/hostapd.conf /etc/hostapd/`
+        - `sudo update-rc.d hostapd defaults`
+        - `sudo update-rc.d hostapd enable`
     - modify hostapd config file
         ```bash
         sudo vim /etc/hostapd/hostapd.conf
@@ -295,6 +303,8 @@ script.bin is a file with very important configuration parameters like port GPIO
         auth_algs=1
         wmm_enabled=0
         ```
+    - test configuration
+        
     - reboot: `sudo reboot`
 
 2. disable bluetooth
