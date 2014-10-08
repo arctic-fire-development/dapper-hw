@@ -266,7 +266,7 @@ script.bin is a file with very important configuration parameters like port GPIO
 1.  change wifi to be AP
     - `sudo vi  /etc/udev/rules.d/70-persistent-net.rules`
         - Replace the mac address with asterisk ‘*’, and remove all others.
-            - ```bash
+            ```bash
             # USB device 0x0bda:0x8176 (usb)
             SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="*", ATTR{dev_id}
             =="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0"
@@ -274,7 +274,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - Reboot pcDuino, and we find that there is only one possibility: wlan0 
     - to use wlan0 as a gateway, set wlan0 as static ip
         - edit `/etc/network/interfaces`
-            - ```bash
+            ```bash
             auto wlan0
             iface wlan0 inet static
                 address 192.168.100 .1
@@ -316,10 +316,12 @@ script.bin is a file with very important configuration parameters like port GPIO
     - reboot: `sudo reboot`
 
 2. disable bluetooth
-    - ```sudo update-rc.d -f bluetooth remove```
-    - ```sudo vim /etc/init/bluetooth.conf
+    - `sudo update-rc.d -f bluetooth remove`
+    - `sudo vim /etc/init/bluetooth.conf`
+        ```bash
         # add "never" to the start on line:
-        start on (never and started dbus)```
+        start on (never and started dbus)
+        ```
 
 2.  Turn on UART2 for GPS (might not be required anymore since UART2 enabled in fex)
     - add this to /etc/init/uart2.service
@@ -341,19 +343,19 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 
 3.  check that our 3dr radio is up
-    - ```sudo lsmod```
-    - ```sudo lsusb```
+    - `sudo lsmod`
+    - `sudo lsusb`
 4.  set hostname
-    - ```sudo vim /etc/hostname```
+    - `sudo vim /etc/hostname`
         - gcs or gcs0001
-    - ```sudo vim /etc/hosts```
+    - `sudo vim /etc/hosts`
         - same as above
 5.  configure avahi-daemon
-    - ```sudo update-rc.d avahi-daemon defaults```
-    - ```sudo update-rc.d avahi-daemon enable```
+    - `sudo update-rc.d avahi-daemon defaults`
+    - `sudo update-rc.d avahi-daemon enable`
     - copy over afpd.service from dapper-hw
-        - ```cp ~/dapper-hw/afpd.service /etc/avahi/services/afpd.service```
-    - Restart Avahi: ```sudo /etc/init.d/avahi-daemon restart```
+        - `cp ~/dapper-hw/afpd.service /etc/avahi/services/afpd.service`
+    - Restart Avahi: `sudo /etc/init.d/avahi-daemon restart`
 6.  edit gpsd
     ```bash
     ubuntu@arm:~$ sudo dpkg-reconfigure gpsd
@@ -370,27 +372,27 @@ script.bin is a file with very important configuration parameters like port GPIO
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
 7.  reboot
-    - ```sudo reboot```
+    - `sudo reboot`
 
 ### install gcs
 1.  nodejs
     - follow instructions at https://github.com/nodesource/distributions#deb
-    - ```sudo ln -s /usr/bin/nodejs /usr/bin/node```
+    - `sudo ln -s /usr/bin/nodejs /usr/bin/node`
 2.  GCS software prerequisites
-    - ```sudo npm install -g grunt-cli bower forever nodemon```
+    - `sudo npm install -g grunt-cli bower forever nodemon`
 3.  copy over keys
-    - ```scp ~/.ssh/github-keys* linaro@gcs:/home/linaro/.ssh/```
+    - `scp ~/.ssh/github-keys* linaro@gcs:/home/linaro/.ssh/`
     - if no .ssh folder is on the gcs side
         - follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
         - or quickly generate a pair on the gcs then delete them
-        - ```ssh-keygen -t rsa```
+        - `ssh-keygen -t rsa`
             - choose defaults, no password
-        - ```rm .ssh/id_rsa*```
+        - `rm .ssh/id_rsa*`
         - now scp the keys over
 4.  test that you can connect to github
-    - ```ssh -T git@github.com```
+    - `ssh -T git@github.com`
 5.  clone repo
-    ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
+    `git clone git@github.com:arctic-fire-development/dapper-gcs.git`
     ```bash
     cd dapper-gcs
     git submodule init
@@ -400,27 +402,27 @@ script.bin is a file with very important configuration parameters like port GPIO
     grunt
     ```
 6.  copy over the upstart script
-    - ```sudo cp dapper-gcs.conf /etc/init/```
-    - ```sudo start dapper-gcs```
+    - `sudo cp dapper-gcs.conf /etc/init/`
+    - `sudo start dapper-gcs`
 
 ### Backup and Restore SD Card with OS X
 Backup
 1. Insert sd card to be cloned from
-2. use ```diskutil list`` to find it
+2. use `diskutil list` to find it
     - eg. /dev/disk2
-3. ```sudo dd if=/dev/disk2 of=~/Desktop/afdc-pcduino-06Oct2014.dmg```
+3. `sudo dd if=/dev/disk2 of=~/Desktop/afdc-pcduino-06Oct2014.dmg`
 4. 15+ minutes later it should finish
-    -   ```bash
-        15130624+0 records in
-        15130624+0 records out
-        7746879488 bytes transferred in 915.097360 secs (8465634 bytes/sec)
+    ```bash
+    15130624+0 records in
+    15130624+0 records out
+    7746879488 bytes transferred in 915.097360 secs (8465634 bytes/sec)
     ```
 
 Restore
 1. Insert sd card to be cloned to
 2. use diskutil to format it to msdos
     - note the disk number, eg. /dev/disk2
-3. ```sudo dd if=~/Desktop/afdc-pcduino-06Oct2014.dmg of=/dev/disk2```
+3. `sudo dd if=~/Desktop/afdc-pcduino-06Oct2014.dmg of=/dev/disk2`
 
 ### GPIO Notes
 - GPIO 7 and 8 are used for wifi, so we're not able to use the gps shield in it's current form
