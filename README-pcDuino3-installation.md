@@ -406,7 +406,9 @@ script.bin is a file with very important configuration parameters like port GPIO
     - `sudo start dapper-gcs`
 
 ### Backup and Restore SD Card with OS X
-Backup
+
+####Backup
+
 1. Insert sd card to be cloned from
 2. use `diskutil list` to find it
     - eg. /dev/disk2
@@ -418,7 +420,8 @@ Backup
     7746879488 bytes transferred in 915.097360 secs (8465634 bytes/sec)
     ```
 
-Restore
+####Restore
+
 1. Insert sd card to be cloned to
 2. use diskutil to format it to msdos
     - note the disk number, eg. /dev/disk2
