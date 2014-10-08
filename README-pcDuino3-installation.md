@@ -303,11 +303,14 @@ script.bin is a file with very important configuration parameters like port GPIO
     - modify hostapd config file
     ```bash
     sudo vim /etc/hostapd/hostapd.conf
+    
     interface=wlan0
     ssid=gcs
-    hw_mode=g
     channel=1
     auth_algs=1
+    driver=rtl871xdrv
+    ieee80211n=1
+    hw_mode=g
     wmm_enabled=0
     ```
     - test configuration
