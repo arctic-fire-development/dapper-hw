@@ -255,13 +255,6 @@ script.bin is a file with very important configuration parameters like port GPIO
 1.  install system requirements
     - clean apt cache: `rm /var/cache/apt/*.bin`
     - `sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y`
-    - Install NodeJS from source.
-        - `wget http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz`
-        - `tar xzvf node-v0.10.22.tar.gz && cd node-v0.10.22`
-        - `./configure --without-snapshot`
-        - `make && sudo make install`
-    - `sudo npm install -g grunt-cli bower forever nodemon`
-    - `sudo rm -rf tmp`
 
 1.  change wifi to be AP
     - `sudo vi  /etc/udev/rules.d/70-persistent-net.rules`
@@ -282,6 +275,12 @@ script.bin is a file with very important configuration parameters like port GPIO
         ```
     - build and install wireless driver
         - `cd ~`
+        - `lsmod`
+            - look to see that 8188eu is present
+        - `sudo modprobe -r 8188eu`
+            - run lsmod again to verify it was unloaded
+        - delete the original module
+            - `sudo rm /lib/modules/3.4.79+/kernel/drivers/net/wireless/rtl8188eu/8188eu.ko`
         - `sudo apt-get install libssl-dev pcduino-linux-headers-3.4.79+`
         - `git clone https://github.com/lwfinger/rtl8188eu.git`
         - `cd rtl8188eu`
@@ -289,45 +288,49 @@ script.bin is a file with very important configuration parameters like port GPIO
             - add above line 17: `CONFIG_AP_MODE = y`
         - `sudo make -j3 install`
         - `sudo mv /lib/modules/3.4.79+/kernel/drivers/net/wireless/8188eu.ko /lib/modules/3.4.79+/kernel/drivers/net/wireless/rtl8188eu/8188eu.ko`
+        - `sudo modprobe 8188eu`
+        - `lsmod`
+            - 8188eu should be present near the top
     - build and install hostapd
+        - still in lwfinger repo
+        - `cd hostapd-0.8/hostapd`
+        - `cp defconfig .config`
+        - `make -j3`
+        - create a local hostapd-test.conf file
+            - vim hostapd-test.conf
+            ```bash
+            interface=wlan0
+            ssid=gcs
+            channel=1
+            auth_algs=1
+            driver=rtl871xdrv
+            ieee80211n=1
+            hw_mode=g
+            wmm_enabled=0
+            ```
+            - test with `sudo ./hostapd -dd ./hostapd-test.conf`
+        - `sudo make install`
         - `cd ~`
         - `git clone https://github.com/jenssegers/RTL8188-hostapd`
-        - `cd ~/RTL8188-hostapd/hostapd`
-        - `vim .config`
-            - add CONFIG_DRIVER_RTW=y at line 14
-            - uncomment line about 80211N around line 139
-        - `sudo make -j3`
-        - `sudo make install`
+        - `cd ~/RTL8188-hostapd`
+        - `sudo cp scripts/init /etc/init.d/hostapd`
+        - `sudo mkdir /etc/hostapd`
+        - `sudo cp ~/rtl8188eu/hostapd-0.8/hostapd/hostapd-test.conf /etc/hostapd/hostapd.conf`
+        - test with `sudo hostapd -dd /etc/hostapd/hostapd.conf`
         - `sudo update-rc.d hostapd defaults`
         - `sudo update-rc.d hostapd enable`
-    - modify hostapd config file
-    ```bash
-    sudo vim /etc/hostapd/hostapd.conf
-    
-    interface=wlan0
-    ssid=gcs
-    channel=1
-    auth_algs=1
-    driver=rtl871xdrv
-    ieee80211n=1
-    hw_mode=g
-    wmm_enabled=0
-    ```
-    - test configuration
-        - `sudo hostapd -dd /etc/hostapd/hostapd.conf`
-        
-    - reboot: `sudo reboot`
+2. install nodejs from source.
+    - `wget http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz`
+    - `tar xzvf node-v0.10.22.tar.gz && cd node-v0.10.22`
+    - `./configure --without-snapshot`
+    - `make && sudo make install`
+    - `sudo npm install -g grunt-cli bower forever nodemon`
+    - `sudo rm -rf tmp`
 
-2. disable bluetooth
-    - `sudo update-rc.d -f bluetooth remove`
-    - `sudo vim /etc/init/bluetooth.conf`
-    ```bash
-    # add "never" to the start on line:
-    start on (never and started dbus)
-    ```
 3.  check that our 3dr radio is up
     - `sudo lsmod`
     - `sudo lsusb`
+        - should see ftdi device
 4.  set hostname
     - `sudo vim /etc/hostname`
         - gcs or gcs0001
