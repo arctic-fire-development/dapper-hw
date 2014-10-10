@@ -231,7 +231,7 @@ script.bin is a file with very important configuration parameters like port GPIO
 
 ## os setup
 
-0.  enable hardline ethernet
+1.  enable hardline ethernet
     - on your host machine, configure kermit to use the ftdi-usb cable as described earlier
         - `kermit`
         - `kermit> connect`
@@ -247,16 +247,16 @@ script.bin is a file with very important configuration parameters like port GPIO
         - `sudo ifup eth0`
         - `sudo ifconfig`
             - look for the ip address: eg 192.168.1.105
-1.  update system time
+2.  update system time
     - `ntpdate ntp.ubuntu.com pool.ntp.org`
-1.  now from a terminal in your main machine, ssh into the gcs box
+3.  now from a terminal in your main machine, ssh into the gcs box
     - `ssh linaro@192.168.1.105`
         - pw: linaro
-1.  install system requirements
+4.  install system requirements
     - clean apt cache: `rm /var/cache/apt/*.bin`
     - `sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y`
 
-1.  change wifi to be AP
+5.  change wifi to be AP
     - `sudo vi  /etc/udev/rules.d/70-persistent-net.rules`
         - Replace the mac address with asterisk ‘*’, and remove all others.
         ```bash
@@ -317,9 +317,10 @@ script.bin is a file with very important configuration parameters like port GPIO
         - `sudo mkdir /etc/hostapd`
         - `sudo cp ~/rtl8188eu/hostapd-0.8/hostapd/hostapd-test.conf /etc/hostapd/hostapd.conf`
         - test with `sudo hostapd -dd /etc/hostapd/hostapd.conf`
+        - `sudo chmod +x /etc/init.d/hostapd`
         - `sudo update-rc.d hostapd defaults`
         - `sudo update-rc.d hostapd enable`
-2. install nodejs from source.
+6. install nodejs from source.
     - `wget http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz`
     - `tar xzvf node-v0.10.22.tar.gz && cd node-v0.10.22`
     - `./configure --without-snapshot`
@@ -327,22 +328,22 @@ script.bin is a file with very important configuration parameters like port GPIO
     - `sudo npm install -g grunt-cli bower forever nodemon`
     - `sudo rm -rf tmp`
 
-3.  check that our 3dr radio is up
+7.  check that our 3dr radio is up
     - `sudo lsmod`
     - `sudo lsusb`
         - should see ftdi device
-4.  set hostname
+8.  set hostname
     - `sudo vim /etc/hostname`
         - gcs or gcs0001
     - `sudo vim /etc/hosts`
         - same as above
-5.  configure avahi-daemon
+9.  configure avahi-daemon
     - `sudo update-rc.d avahi-daemon defaults`
     - `sudo update-rc.d avahi-daemon enable`
     - copy over afpd.service from dapper-hw
         - `cp ~/dapper-hw/afpd.service /etc/avahi/services/afpd.service`
     - Restart Avahi: `sudo /etc/init.d/avahi-daemon restart`
-6.  edit gpsd
+10.  edit gpsd
     ```bash
     ubuntu@arm:~$ sudo dpkg-reconfigure gpsd
     ubuntu@arm:~$ cat /etc/default/gpsd
@@ -357,16 +358,7 @@ script.bin is a file with very important configuration parameters like port GPIO
     USBAUTO="false"
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
-7.  reboot
-    - `sudo reboot`
-
-### install gcs
-1.  nodejs
-    - follow instructions at https://github.com/nodesource/distributions#deb
-    - `sudo ln -s /usr/bin/nodejs /usr/bin/node`
-2.  GCS software prerequisites
-    - `sudo npm install -g grunt-cli bower forever nodemon`
-3.  copy over keys
+11.  copy over keys and verify
     - `scp ~/.ssh/github-keys* linaro@gcs:/home/linaro/.ssh/`
     - if no .ssh folder is on the gcs side
         - follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
@@ -375,9 +367,9 @@ script.bin is a file with very important configuration parameters like port GPIO
             - choose defaults, no password
         - `rm .ssh/id_rsa*`
         - now scp the keys over
-4.  test that you can connect to github
-    - `ssh -T git@github.com`
-5.  clone repo
+    - test that you can connect to github
+        - `ssh -T git@github.com`
+12.  clone repo
     `git clone git@github.com:arctic-fire-development/dapper-gcs.git`
     ```bash
     cd dapper-gcs
@@ -387,10 +379,10 @@ script.bin is a file with very important configuration parameters like port GPIO
     bower install
     grunt
     ```
-6.  copy over the upstart script
+13.  copy over the upstart script
     - `sudo cp dapper-gcs.conf /etc/init/`
     - `sudo start dapper-gcs`
-7.  copy the script.bin into the boot directory
+14.  copy the script.bin into the boot directory
     - this turns off many coponents not used and enables a few we need like UART2
     - determine where the boot partition is mounted
         - `sudo mount`
