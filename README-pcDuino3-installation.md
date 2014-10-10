@@ -254,7 +254,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - pw: linaro
 4.  install system requirements
     - clean apt cache: `rm /var/cache/apt/*.bin`
-    - `sudo apt-get install git vim bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y`
+    - `sudo apt-get install git vim dstat bash-completion build-essential python-dev python-setuptools python-pip python-smbus gpsd gpsd-clients -y`
 
 5.  change wifi to be AP
     - `sudo vi  /etc/udev/rules.d/70-persistent-net.rules`
