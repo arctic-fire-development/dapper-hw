@@ -317,7 +317,7 @@ script.bin is a file with very important configuration parameters like port GPIO
         - `sudo mkdir /etc/hostapd`
         - `sudo cp ~/rtl8188eu/hostapd-0.8/hostapd/hostapd-test.conf /etc/hostapd/hostapd.conf`
         - test with `sudo hostapd -dd /etc/hostapd/hostapd.conf`
-        - `sudo chmod +x /etc/init.d/hostapd`
+        - `sudo chmod a+x /etc/init.d/hostapd`
         - `sudo update-rc.d hostapd defaults`
         - `sudo update-rc.d hostapd enable`
 6. install nodejs from source.
