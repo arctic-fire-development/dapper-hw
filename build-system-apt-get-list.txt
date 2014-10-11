@@ -1,7 +1,6 @@
 build-essential
 gcc-arm-linux-gnueabihf
 g++-arm-linux-gnueabihf
-ckermit
 gparted
 libncurses5-dev
 git
