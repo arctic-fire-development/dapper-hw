@@ -116,39 +116,9 @@ This will require:
                 you should see this or similar:
                 <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
                 ```
-    - other
-        - ```sudo apt-get install pv```
-9. Device Tree  (optional)
-    - install dtc
-        - ```wget -c https://raw.githubusercontent.com/RobertCNelson/tools/master/pkgs/dtc.sh```
-        - ```chmod +x ./dtc.sh```
-        - ```sudo ./dtc.sh```
 
-        - verify installation
-            ```
-            which dtc
-            /usr/local/bin/dtc
-            ```
-    - make a dts for the gps
-        + ```cd /lib/firmware```
-        + ```sudo wget -c https://raw.githubusercontent.com/arctic-fire-development/dapper-hw/master/T8LO-GPS-00A0.dts```
-    - compile it using the dtc
-        + ```sudo dtc -@ -I dts -O dtb -o T8LO-GPS-00A0.dtbo T8LO-GPS-00A0.dts```
-    - copy over and enable
-        - ```sudo cp *.dtbo /lib/firmware/```
-        - ```sudo sh -c "echo T8LO-GPS > /sys/devices/bone_capemgr.9/slots"```
-        - ```cat /sys/devices/bone_capemgr.9/slots```
-            ```bash
-             0: 54:PF---
-             1: 55:PF---
-             2: 56:PF---
-             3: 57:PF---
-             4: ff:P-O-L Bone-LT-eMMC-2G,00A0,Texas Instrument,BB-BONE-EMMC-2G
-             5: ff:P-O-L Bone-Black-HDMI,00A0,Texas Instrument,BB-BONELT-HDMI
-            17: ff:P-O-L Override Board Name,00A0,Override Manuf,T8LO-GPS
-            ```
 10. install gpsd and ntp
-    - ```sudo apt-get install gpsd gpsd-clients ntp```
+    `sudo apt-get install gpsd gpsd-clients ntp`
 
 11. edit gpsd and ntp
 
@@ -167,30 +137,11 @@ This will require:
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
 
-    ```bash
-    ubuntu@arm:~$ cat /etc/default/ntp
-    NTPD_OPTS='-g'
-    ```
-
-12. add the following to the top of /etc/ntp.conf
-
-    ```bash
-    # /etc/ntp.conf, configuration for ntpd; see ntp.conf(5) for help
-
-    # NTP  GPS stuff
-
-    # Read the rough GPS time from device 127.127.28.0
-    # Read the accurate PPS time from device 127.127.22.0
-
-    server 127.127.28.0 minpoll 4 maxpoll 4
-    fudge 127.127.28.0 time1 0.535 refid GPS
-    server 127.127.22.0 minpoll 4 maxpoll 4 prefer
-    fudge 127.127.22.0 time1 0.000 flag3 1 refid PPS
-    ```
-
-13. edit /boot/uboot/uEnv.txt
+13. edit /boot/uEnv.txt
     - edit the optargs line, adding this line if required:
-        - ```optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G capemgr.enable_partno=BB-UART4```
+        - ```bash
+            cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
+            cape_enable=capemgr.enable_partno=BB-UART4```
 
 14. verify gpsd is working
     - ```bash
