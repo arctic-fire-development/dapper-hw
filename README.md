@@ -212,7 +212,7 @@ This will require:
         ```bash
         cd dapper-gcs
         git submodule init
-        git update
+        git submodule update
         npm install
         bower install
         grunt
