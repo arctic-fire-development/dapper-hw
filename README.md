@@ -177,17 +177,17 @@ This will require:
         - notice CPU frequency is 1000Mhz and governor is set to performance
 
 17. turn off apache
-    - ```sudo update-rc.d -f apache2 disable```
-    - ```sudo reboot```
-    - ```sudo ps -aux | grep apache | grep -v grep```
+    - `sudo update-rc.d -f apache2 disable`
+    - `sudo reboot`
+    - `sudo ps -aux | grep apache | grep -v grep`
         - should come back empty
 
 ### Post System Installation
 
 1. set some preferences
-    - ```vim .bashrc```
-        - uncomment ```#force_color_prompt=yes```
-    - ```vim .profile```
+    - `vim .bashrc`
+        - uncomment `#force_color_prompt=yes`
+    - `vim .profile`
         - add the following:
             ```bash
             if ! shopt -oq posix; then
@@ -204,11 +204,12 @@ This will require:
 2. setup gcs
     - add your github public and private keys to ~/.ssh
     - test that you can connect to github
-        - ```ssh -T git@github.com```
+        - `ssh -T git@github.com`
         - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
     - clone the directory
-        - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
-        - ```bash
+        - `git clone git@github.com:arctic-fire-development/dapper-gcs.git`
+        
+        ```bash
         cd dapper-gcs
         git submodule init
         git update
@@ -217,8 +218,8 @@ This will require:
         grunt
         ```
     - copy over the upstart script
-        - ```sudo cp dapper-gcs.conf /etc/init/```
-        - ```sudo start dapper-gcs```
+        - `sudo cp dapper-gcs.conf /etc/init/`
+        - `sudo start dapper-gcs`
 3. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
