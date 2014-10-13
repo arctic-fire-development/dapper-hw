@@ -178,6 +178,8 @@ This will require:
 
 17. hostapd
     - [follow these instructions from adafruit](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/install-software)
+        - [custom build hostapd from here](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/compiling-hostapd)
+        - will need to `sudo apt-get install unzip`
 18. turn off apache
     - `sudo update-rc.d -f apache2 disable`
     - `sudo reboot`
