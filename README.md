@@ -176,7 +176,9 @@ This will require:
             - ```performance```
         - notice CPU frequency is 1000Mhz and governor is set to performance
 
-17. turn off apache
+17. hostapd
+    - [follow these instructions from adafruit](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/install-software)
+18. turn off apache
     - `sudo update-rc.d -f apache2 disable`
     - `sudo reboot`
     - `sudo ps -aux | grep apache | grep -v grep`
