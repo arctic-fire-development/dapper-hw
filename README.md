@@ -137,33 +137,38 @@ This will require:
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
 
-13. edit /boot/uEnv.txt
+13. edit uEnv.txt
+    - `sudo vim /boot/uEnv.txt`
     - edit the optargs line, adding this line if required:
-        - ```bash
-            cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
-            cape_enable=capemgr.enable_partno=BB-UART4```
+        ```bash
+        cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
+        cape_enable=capemgr.enable_partno=BB-UART4
+        ```
+    - `mkdir mmcblk0p1`
+    - `sudo mount /dev/mmcblk0p1 ./mmcblk0p1`
+    - `sudo cp /boot/uEnv.txt ./mmcblk0p1/`
 
 14. verify gpsd is working
-    - ```bash
+    ```bash
     ubuntu@arm:~$ cgps
     ```
     - you should see a table output
 
 15. verify ntp is working with pps
-    - ```bash
+    ```bash
     ubuntu@arm:~$ ntpq -p
     ```
     - if you don't see a pps entry, then we need to recompile ntp to use the ATOM driver
 
 16. turn off the damned governor
-    - ```sudo vim /etc/init.d/ondemand```
+    - `sudo vim /etc/init.d/ondemand`
     - edit ondemand to be performance
         ```bash
         *ondemand*)
             GOVERNOR="performance"  # <---- originally was "ondemand"
             break
         ```
-    - ```sudo reboot```
+    - `sudo reboot`
     - verify it took hold
         - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq```
             - ```1000000```
