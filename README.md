@@ -223,6 +223,17 @@ This will require:
         ```
     - copy over the upstart script
         - `sudo cp dapper-gcs.conf /etc/init/`
+        - `cp config.json config`
+        - `vim config.json`
+            ```bash
+            "connection" : {
+                "type": "serial",`
+            ```
+            
+            ```bash
+              "serial" : {
+                "device" : "/dev/tty.usbserial-A900XUV3",
+            ```
         - `sudo start dapper-gcs`
 3. clean up any ssh files
     - delete .ssh directory
