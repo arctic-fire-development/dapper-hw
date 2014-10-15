@@ -26,14 +26,24 @@ This will require:
     - [ubuntu-14.04-console-armhf-2014-08-13](https://rcn-ee.net/deb/rootfs/trusty/ubuntu-14.04-console-armhf-2014-08-13.tar.xz)
     - install to a micro SD card
         - For OS X: [Pi Filler](http://ivanx.com/raspberrypi/)
+        - on ubuntu vm:
+            - `tar xvf ubuntu-14.04*`
+            - `cd ubuntu-14.04*`
+            - `sudo fdisk -l`
+                - look for where the uSD card is, eg /dev/sdb
+            - `sudo ./setup_sdcard.sh --mmc /dev/sdb --dtb beaglebone`
+            - grab a sandwhich
     - insert micro SD card into unpowered BBB
     - apply power to BBB (do NOT hold the USER/BOOT button)
         - LEDs will begin blinking
 
-3. login to the BBB over usb
-    - ```ssh ubuntu@192.168.7.2```
-        - u: ubuntu
-        - p: temppwd
+3. login to the BBB
+    - over usb:
+        - `ssh ubuntu@192.168.7.2`
+    - over ethernet:
+        - `ssh ubuntu@arm.local`
+    - u: ubuntu
+    - p: temppwd
 
 4. Expand the uSD file system
     ```bash
@@ -149,16 +159,8 @@ This will require:
     - `sudo cp /boot/uEnv.txt ./mmcblk0p1/`
 
 14. verify gpsd is working
-    ```bash
-    ubuntu@arm:~$ cgps
-    ```
-    - you should see a table output
-
-15. verify ntp is working with pps
-    ```bash
-    ubuntu@arm:~$ ntpq -p
-    ```
-    - if you don't see a pps entry, then we need to recompile ntp to use the ATOM driver
+    - `ubuntu@arm:~$ cgps`
+    - you should see a table output with something updating roughly every second
 
 16. turn off the damned governor
     - `sudo vim /etc/init.d/ondemand`
@@ -212,7 +214,7 @@ This will require:
         - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
     - clone the directory
         - `git clone git@github.com:arctic-fire-development/dapper-gcs.git`
-        
+
         ```bash
         cd dapper-gcs
         git submodule init
@@ -229,12 +231,13 @@ This will require:
             "connection" : {
                 "type": "serial",`
             ```
-            
+
             ```bash
               "serial" : {
                 "device" : "/dev/tty.usbserial-A900XUV3",
             ```
         - `sudo start dapper-gcs`
+
 3. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
