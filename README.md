@@ -116,39 +116,9 @@ This will require:
                 you should see this or similar:
                 <module 'Adafruit_BBIO.GPIO' from '/usr/local/lib/python2.7/dist-packages/Adafruit_BBIO/GPIO.so'>
                 ```
-    - other
-        - ```sudo apt-get install pv```
-9. Device Tree  (optional)
-    - install dtc
-        - ```wget -c https://raw.githubusercontent.com/RobertCNelson/tools/master/pkgs/dtc.sh```
-        - ```chmod +x ./dtc.sh```
-        - ```sudo ./dtc.sh```
 
-        - verify installation
-            ```
-            which dtc
-            /usr/local/bin/dtc
-            ```
-    - make a dts for the gps
-        + ```cd /lib/firmware```
-        + ```sudo wget -c https://raw.githubusercontent.com/arctic-fire-development/dapper-hw/master/T8LO-GPS-00A0.dts```
-    - compile it using the dtc
-        + ```sudo dtc -@ -I dts -O dtb -o T8LO-GPS-00A0.dtbo T8LO-GPS-00A0.dts```
-    - copy over and enable
-        - ```sudo cp *.dtbo /lib/firmware/```
-        - ```sudo sh -c "echo T8LO-GPS > /sys/devices/bone_capemgr.9/slots"```
-        - ```cat /sys/devices/bone_capemgr.9/slots```
-            ```bash
-             0: 54:PF---
-             1: 55:PF---
-             2: 56:PF---
-             3: 57:PF---
-             4: ff:P-O-L Bone-LT-eMMC-2G,00A0,Texas Instrument,BB-BONE-EMMC-2G
-             5: ff:P-O-L Bone-Black-HDMI,00A0,Texas Instrument,BB-BONELT-HDMI
-            17: ff:P-O-L Override Board Name,00A0,Override Manuf,T8LO-GPS
-            ```
 10. install gpsd and ntp
-    - ```sudo apt-get install gpsd gpsd-clients ntp```
+    `sudo apt-get install gpsd gpsd-clients ntp`
 
 11. edit gpsd and ntp
 
@@ -167,52 +137,38 @@ This will require:
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
 
-    ```bash
-    ubuntu@arm:~$ cat /etc/default/ntp
-    NTPD_OPTS='-g'
-    ```
-
-12. add the following to the top of /etc/ntp.conf
-
-    ```bash
-    # /etc/ntp.conf, configuration for ntpd; see ntp.conf(5) for help
-
-    # NTP  GPS stuff
-
-    # Read the rough GPS time from device 127.127.28.0
-    # Read the accurate PPS time from device 127.127.22.0
-
-    server 127.127.28.0 minpoll 4 maxpoll 4
-    fudge 127.127.28.0 time1 0.535 refid GPS
-    server 127.127.22.0 minpoll 4 maxpoll 4 prefer
-    fudge 127.127.22.0 time1 0.000 flag3 1 refid PPS
-    ```
-
-13. edit /boot/uboot/uEnv.txt
+13. edit uEnv.txt
+    - `sudo vim /boot/uEnv.txt`
     - edit the optargs line, adding this line if required:
-        - ```optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G capemgr.enable_partno=BB-UART4```
+        ```bash
+        cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
+        cape_enable=capemgr.enable_partno=BB-UART4
+        ```
+    - `mkdir mmcblk0p1`
+    - `sudo mount /dev/mmcblk0p1 ./mmcblk0p1`
+    - `sudo cp /boot/uEnv.txt ./mmcblk0p1/`
 
 14. verify gpsd is working
-    - ```bash
+    ```bash
     ubuntu@arm:~$ cgps
     ```
     - you should see a table output
 
 15. verify ntp is working with pps
-    - ```bash
+    ```bash
     ubuntu@arm:~$ ntpq -p
     ```
     - if you don't see a pps entry, then we need to recompile ntp to use the ATOM driver
 
 16. turn off the damned governor
-    - ```sudo vim /etc/init.d/ondemand```
+    - `sudo vim /etc/init.d/ondemand`
     - edit ondemand to be performance
         ```bash
         *ondemand*)
             GOVERNOR="performance"  # <---- originally was "ondemand"
             break
         ```
-    - ```sudo reboot```
+    - `sudo reboot`
     - verify it took hold
         - ```sudo cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq```
             - ```1000000```
@@ -220,18 +176,22 @@ This will require:
             - ```performance```
         - notice CPU frequency is 1000Mhz and governor is set to performance
 
-17. turn off apache
-    - ```sudo update-rc.d -f apache2 disable```
-    - ```sudo reboot```
-    - ```sudo ps -aux | grep apache | grep -v grep```
+17. hostapd
+    - [follow these instructions from adafruit](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/install-software)
+        - [custom build hostapd from here](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/compiling-hostapd)
+        - will need to `sudo apt-get install unzip`
+18. turn off apache
+    - `sudo update-rc.d -f apache2 disable`
+    - `sudo reboot`
+    - `sudo ps -aux | grep apache | grep -v grep`
         - should come back empty
 
 ### Post System Installation
 
 1. set some preferences
-    - ```vim .bashrc```
-        - uncomment ```#force_color_prompt=yes```
-    - ```vim .profile```
+    - `vim .bashrc`
+        - uncomment `#force_color_prompt=yes`
+    - `vim .profile`
         - add the following:
             ```bash
             if ! shopt -oq posix; then
@@ -248,21 +208,33 @@ This will require:
 2. setup gcs
     - add your github public and private keys to ~/.ssh
     - test that you can connect to github
-        - ```ssh -T git@github.com```
+        - `ssh -T git@github.com`
         - or follow the guide from [github](https://help.github.com/articles/generating-ssh-keys)
     - clone the directory
-        - ```git clone git@github.com:arctic-fire-development/dapper-gcs.git```
-        - ```bash
+        - `git clone git@github.com:arctic-fire-development/dapper-gcs.git`
+        
+        ```bash
         cd dapper-gcs
         git submodule init
-        git update
+        git submodule update
         npm install
         bower install
         grunt
         ```
     - copy over the upstart script
-        - ```sudo cp dapper-gcs.conf /etc/init/```
-        - ```sudo start dapper-gcs```
+        - `sudo cp dapper-gcs.conf /etc/init/`
+        - `cp config.json config`
+        - `vim config.json`
+            ```bash
+            "connection" : {
+                "type": "serial",`
+            ```
+            
+            ```bash
+              "serial" : {
+                "device" : "/dev/tty.usbserial-A900XUV3",
+            ```
+        - `sudo start dapper-gcs`
 3. clean up any ssh files
     - delete .ssh directory
     - delete .gitconfig
