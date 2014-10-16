@@ -146,6 +146,11 @@ This will require:
     USBAUTO="false"
     GPSD_SOCKET="/var/run/gpsd.sock"
     ```
+12. connect gps unit to the following pins
+    - tx -> P9.11
+    - rx -> P9.13
+    - ground -> P9.2
+    - power -> P9.3
 
 13. edit uEnv.txt
     - `sudo vim /boot/uEnv.txt`
