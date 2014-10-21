@@ -187,6 +187,8 @@ This will require:
     - [follow these instructions from adafruit](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/install-software)
         - [custom build hostapd from here](https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point/compiling-hostapd)
         - will need to `sudo apt-get install unzip`
+    - copy over etc/hostapd
+        - `sudo cp etc/hostapd.conf /etc/hostapd/hostapd.conf`
 18. turn off apache
     - `sudo update-rc.d -f apache2 disable`
     - `sudo reboot`
@@ -230,9 +232,13 @@ This will require:
         ```
     - copy over the upstart script
         - `sudo cp dapper-gcs.conf /etc/init/`
+    - edit the config.json
         - `cp config.json config`
         - `vim config.json`
             ```bash
+            "mapproxy": {
+                "url":"http://gcs.local:8080/service"
+            },
             "connection" : {
                 "type": "serial",`
             ```
